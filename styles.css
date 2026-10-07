@@ -259,11 +259,11 @@ h2 {
   width: 100%;
   color: #fff;
   font-family: "Momentum", var(--serif);
-  font-size: 18cqi;
+  font-size: 26cqi;
   font-style: italic;
   line-height: 1;
   text-align: center;
-  -webkit-text-stroke: .9cqi #000;
+  -webkit-text-stroke: 1.3cqi #000;
   paint-order: stroke fill;
 }
 

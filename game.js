@@ -50,7 +50,7 @@ const elements = Object.fromEntries([
   "copy-invite-button", "leave-room-button", "start-game-button", "lobby-hint",
   "game-board", "turn-label", "turn-status", "round-status", "game-players",
   "market-tiers", "bank-resources", "game-actions", "game-heroes",
-  "game-resolution", "game-finished",
+  "game-resolution", "discard-dialog", "game-finished",
 ].map((id) => [id, document.getElementById(id)]));
 
 let cards = [];
@@ -69,6 +69,7 @@ const presenceListeners = new Map();
 const presenceByUid = new Map();
 let currentPresenceRoom = null;
 let discardSelection = emptyCounts();
+let discardSelectionKey = "";
 let selectedResourcePicks = [];
 let resourceBankSnapshot = null;
 let inviteAttempted = false;
@@ -862,9 +863,15 @@ function renderHeroes(paused) {
 
 function renderResolution(paused) {
   const panel = elements["game-resolution"];
+  const discardDialog = elements["discard-dialog"];
   panel.hidden = true;
   panel.replaceChildren();
-  if (currentRoom.status !== "playing" || paused || !currentRoom.pendingResolution) return;
+  discardDialog.replaceChildren();
+  if (currentRoom.status !== "playing" || paused || !currentRoom.pendingResolution) {
+    if (discardDialog.open) discardDialog.close();
+    discardSelectionKey = "";
+    return;
+  }
 
   const pending = currentRoom.pendingResolution;
   const title = document.createElement("h3");
@@ -872,6 +879,7 @@ function renderResolution(paused) {
   panel.className = "game-resolution";
 
   if (pending.uid !== currentUser.uid) {
+    if (discardDialog.open) discardDialog.close();
     title.textContent = `Oczekiwanie na ${currentRoom.players.find((player) => player.uid === pending.uid)?.name || "gracza"}`;
     panel.append(title);
     panel.hidden = false;
@@ -879,8 +887,13 @@ function renderResolution(paused) {
   }
 
   if (currentRoom.phase === "discard") {
+    const selectionKey = `${pending.uid}:${pending.count}`;
+    if (selectionKey !== discardSelectionKey) {
+      discardSelection = emptyCounts();
+      discardSelectionKey = selectionKey;
+    }
     title.textContent = `Odrzuć dokładnie ${pending.count} znaczników`;
-    discardSelection = emptyCounts();
+    title.id = "discard-title";
     content.className = "discard-choices";
 
     for (const type of tokenTypes) {
@@ -892,14 +905,17 @@ function renderResolution(paused) {
       const minus = makeButton("−", "game-button game-button-stepper");
       const amount = document.createElement("strong");
       const plus = makeButton("+", "game-button game-button-stepper");
+      const selectedAmount = discardSelection[type];
       row.className = "discard-row";
       label.className = "discard-resource";
       label.append(makeResourceIcon(type), document.createTextNode(`${resourceNames[type]} (${available})`));
       controls.className = "discard-stepper";
-      amount.textContent = "0";
-      minus.disabled = true;
+      amount.textContent = String(selectedAmount);
+      minus.disabled = selectedAmount === 0;
       minus.addEventListener("click", () => updateDiscardSelection(type, -1, amount, minus, plus, available, pending.count));
       plus.addEventListener("click", () => updateDiscardSelection(type, 1, amount, minus, plus, available, pending.count));
+      plus.disabled = selectedAmount >= available ||
+        tokenTypes.reduce((sum, key) => sum + discardSelection[key], 0) >= pending.count;
       controls.append(minus, amount, plus);
       row.append(label, controls);
       content.append(row);
@@ -910,10 +926,20 @@ function renderResolution(paused) {
     submit.addEventListener("click", () => performAction((game) => {
       discardTokens(game, currentUser.uid, discardSelection, heroMap);
     }));
-    panel.append(title, content, submit);
-    panel.dataset.submit = "discard";
-    panel._submitButton = submit;
+    const selectedTotal = tokenTypes.reduce((sum, type) => sum + discardSelection[type], 0);
+    submit.disabled = selectedTotal !== pending.count;
+    discardDialog.append(title, content, submit);
+    discardDialog._submitButton = submit;
+    if (!discardDialog.dataset.cancelGuard) {
+      discardDialog.addEventListener("cancel", (event) => {
+        if (currentRoom?.phase === "discard") event.preventDefault();
+      });
+      discardDialog.dataset.cancelGuard = "true";
+    }
+    if (!discardDialog.open) discardDialog.showModal();
+    return;
   } else if (currentRoom.phase === "hero") {
+    if (discardDialog.open) discardDialog.close();
     title.textContent = "Możesz przyjąć wizytę tylko jednego bohatera";
     const instruction = document.createElement("p");
     instruction.textContent = "Wybierz jedną z podświetlonych płytek powyżej.";
@@ -933,9 +959,9 @@ function updateDiscardSelection(type, delta, amountElement, minusButton, plusBut
   minusButton.disabled = next === 0;
   plusButton.disabled = next >= available || total + delta >= required;
   const selectedTotal = tokenTypes.reduce((sum, key) => sum + discardSelection[key], 0);
-  elements["game-resolution"]._submitButton.disabled = selectedTotal !== required;
+  elements["discard-dialog"]._submitButton.disabled = selectedTotal !== required;
 
-  for (const row of elements["game-resolution"].querySelectorAll(".discard-row")) {
+  for (const row of elements["discard-dialog"].querySelectorAll(".discard-row")) {
     const rowType = tokenTypes.find((key) => row.querySelector(".discard-resource")?.textContent.startsWith(resourceNames[key]));
     if (!rowType) continue;
     const rowPlus = row.querySelectorAll("button")[1];
