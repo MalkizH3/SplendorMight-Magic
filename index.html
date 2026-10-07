@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="pl">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#171817" />
+    <meta name="description" content="Zagraj online i przeglądaj karty Splendor Might & Magic." />
+    <title>Splendor Might &amp; Magic</title>
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="card-layers.css" />
+    <link rel="stylesheet" href="game.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="brand" href="./" aria-label="Splendor Might & Magic — strona główna">
+        <span class="brand-mark" aria-hidden="true">✦</span>
+        <span>Splendor <span class="brand-amp">×</span> Might &amp; Magic</span>
+      </a>
+      <nav class="topbar-nav" aria-label="Nawigacja główna">
+        <a href="#game-section">Gra online</a>
+        <a href="#gallery-section">Galeria</a>
+      </nav>
+    </header>
+
+    <main>
+      <section class="intro" aria-labelledby="page-title">
+        <p class="eyebrow">
+          <span class="eyebrow-line"></span>
+          SPLENDOR MIGHT &amp; MAGIC
+        </p>
+        <h1 id="page-title">Kopalnie <em>i bohaterowie</em></h1>
+        <p class="intro-copy">
+          Zagraj online albo przejrzyj katalog kart.
+        </p>
+      </section>
+
+      <section id="game-section" class="game-section" aria-labelledby="game-title">
+        <div class="game-section-heading">
+          <div>
+            <p class="game-kicker">ROZGRYWKA ONLINE</p>
+            <h2 id="game-title">Stół gry</h2>
+          </div>
+          <span class="game-connection" id="game-connection">Ładowanie…</span>
+        </div>
+
+        <div class="game-message" id="game-message" role="status" aria-live="polite"></div>
+
+        <section class="game-panel auth-panel" id="auth-panel" aria-label="Konto gracza">
+          <div class="game-panel-copy">
+            <h3>Dołącz do gry</h3>
+            <p>Zaloguj się kontem Google, aby utworzyć partię albo otworzyć link zaproszenia.</p>
+          </div>
+          <button class="game-button game-button-primary" id="sign-in-button" type="button">
+            Zaloguj przez Google
+          </button>
+          <div class="game-profile" id="game-profile" hidden>
+            <span id="profile-name"></span>
+            <button class="game-button game-button-quiet" id="sign-out-button" type="button">Wyloguj</button>
+          </div>
+        </section>
+
+        <section class="game-panel lobby-panel" id="lobby-panel" aria-label="Poczekalnia" hidden>
+          <div class="lobby-home" id="lobby-home">
+            <div class="game-panel-copy">
+              <h3>Nowa partia</h3>
+              <p>Utwórz prywatny stół i wyślij znajomym link zaproszenia.</p>
+            </div>
+            <button class="game-button game-button-primary" id="create-room-button" type="button">Utwórz partię</button>
+          </div>
+          <div class="room-lobby" id="room-lobby" hidden>
+            <div class="room-heading">
+              <div>
+                <p class="game-kicker">POCZEKALNIA</p>
+                <h3>Zaproszeni gracze <span id="lobby-player-count"></span></h3>
+              </div>
+              <button class="game-button game-button-quiet" id="leave-room-button" type="button">Opuść pokój</button>
+            </div>
+            <ol class="lobby-player-list" id="lobby-player-list"></ol>
+            <div class="invite-row">
+              <input id="invite-link" type="text" readonly aria-label="Link zaproszenia" />
+              <button class="game-button" id="copy-invite-button" type="button">Kopiuj link</button>
+            </div>
+            <button class="game-button game-button-primary" id="start-game-button" type="button" hidden>Rozpocznij grę</button>
+            <p class="game-hint" id="lobby-hint"></p>
+          </div>
+        </section>
+
+        <section class="game-board" id="game-board" aria-label="Plansza gry" hidden>
+          <div class="game-statusbar">
+            <div>
+              <p class="game-kicker" id="turn-label">TURA</p>
+              <strong id="turn-status"></strong>
+            </div>
+            <span id="round-status"></span>
+          </div>
+
+          <div class="game-players" id="game-players"></div>
+
+          <div class="board-layout">
+            <section class="market-panel" aria-labelledby="market-title">
+              <div class="game-subheading">
+                <h3 id="market-title">Karty kopalni</h3>
+                <span>Poziomy 1–3</span>
+              </div>
+              <div class="market-tiers" id="market-tiers"></div>
+            </section>
+            <aside class="resources-panel" aria-labelledby="resources-title">
+              <div class="game-subheading">
+                <h3 id="resources-title">Zasoby</h3>
+                <span>Pozostało w puli</span>
+              </div>
+              <div class="bank-resources" id="bank-resources"></div>
+              <div class="game-actions" id="game-actions"></div>
+            </aside>
+          </div>
+
+          <section class="heroes-panel" aria-labelledby="game-heroes-title">
+            <div class="game-subheading">
+              <h3 id="game-heroes-title">Bohaterowie</h3>
+              <span>Wizyta na koniec tury</span>
+            </div>
+            <div class="game-heroes" id="game-heroes"></div>
+          </section>
+
+          <section class="player-area" aria-labelledby="player-area-title">
+            <div class="game-subheading">
+              <h3 id="player-area-title">Twoje królestwo</h3>
+              <span id="player-area-summary"></span>
+            </div>
+            <div class="player-area-content" id="player-area-content"></div>
+          </section>
+
+          <section class="game-resolution" id="game-resolution" aria-live="polite" hidden></section>
+          <section class="game-finished" id="game-finished" aria-live="polite" hidden></section>
+        </section>
+      </section>
+
+      <section id="gallery-section" class="gallery" aria-label="Galeria sprite’ów">
+        <div class="gallery-toolbar">
+          <div class="gallery-heading">
+            <h2>Przykładowe karty</h2>
+            <span class="count" id="sprite-count">0</span>
+          </div>
+          <label class="search-wrap">
+            <span class="search-icon" aria-hidden="true">⌕</span>
+            <span class="sr-only">Szukaj sprite’ów</span>
+            <input
+              id="search"
+              type="search"
+              placeholder="Szukaj w galerii…"
+              autocomplete="off"
+            />
+            <kbd>/</kbd>
+          </label>
+        </div>
+        <div class="filter-row" id="filters" aria-label="Filtruj kategorię"></div>
+        <div class="sprite-grid" id="sprite-grid" aria-live="polite"></div>
+      </section>
+
+      <section class="hero-gallery" aria-labelledby="heroes-title">
+        <div class="gallery-toolbar">
+          <div class="gallery-heading">
+            <h2 id="heroes-title">Kafelki bohaterów</h2>
+            <span class="count" id="hero-count">00</span>
+          </div>
+        </div>
+        <div class="hero-grid" id="hero-grid" aria-live="polite"></div>
+      </section>
+    </main>
+
+    <footer>
+      <span class="footer-star">✦</span>
+      Splendor Might &amp; Magic
+      <span class="footer-sep">·</span>
+      GRA ONLINE &amp; GALERIA
+    </footer>
+
+    <dialog id="preview" class="preview" aria-label="Podgląd sprite’a">
+      <button class="preview-close" id="preview-close" aria-label="Zamknij podgląd">×</button>
+      <div class="preview-image-wrap">
+        <div class="sprite-art preview-card-art">
+          <img id="preview-image" alt="" />
+          <svg
+            class="card-overlay"
+            viewBox="0 0 1504 2080"
+            preserveAspectRatio="xMidYMid meet"
+            role="img"
+            aria-label="Punkty zwycięstwa i bonusowy surowiec"
+          >
+            <rect width="1504" height="416" fill="white" fill-opacity="0.7" />
+            <image
+              id="preview-bonus-resource"
+              x="1070"
+              y="28"
+              width="360"
+              height="360"
+              preserveAspectRatio="xMidYMid meet"
+            />
+            <text
+              class="card-overlay-points"
+              id="preview-points"
+              x="180"
+              y="190"
+              text-anchor="middle"
+              dominant-baseline="central"
+              font-size="400"
+            ></text>
+            <g id="preview-card-costs"></g>
+          </svg>
+        </div>
+      </div>
+      <div class="preview-actions">
+        <button class="preview-download" id="preview-download" type="button">
+          Pobierz jako PNG
+        </button>
+        <span class="sr-only" id="download-status" aria-live="polite"></span>
+      </div>
+    </dialog>
+
+    <script src="app.js" defer></script>
+    <script type="module" src="game.js"></script>
+  </body>
+</html>

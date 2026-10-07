@@ -1,0 +1,84 @@
+/* Obraz karty i niezależne warstwy na jego powierzchni. */
+@font-face {
+  font-family: "Momentum";
+  src: url("fonts/Momentum%20W00%20Italic.ttf") format("truetype");
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+}
+
+.sprite-art {
+  position: relative;
+  display: block;
+  aspect-ratio: 1504 / 2080;
+  overflow: hidden;
+  background: transparent;
+}
+
+.sprite-art img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  image-rendering: auto;
+}
+
+.card-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+}
+
+.card-overlay-points {
+  fill: #fff;
+  stroke: #000;
+  stroke-width: 24;
+  stroke-linejoin: round;
+  paint-order: stroke fill;
+  font-family: "Momentum", var(--serif);
+  font-style: italic;
+  font-weight: 400;
+}
+
+.card-cost-value {
+  stroke-width: 14;
+}
+
+/* Powiększenie używa tych samych warstw co miniatura karty. */
+.preview-image-wrap {
+  display: grid;
+  height: min(70vh, 760px);
+  place-items: center;
+  background: #242522;
+}
+
+.preview-actions {
+  display: flex;
+  justify-content: center;
+  padding: 12px 16px 16px;
+}
+
+.preview-download {
+  border: 1px solid var(--gold);
+  padding: 10px 18px;
+  background: #242522;
+  color: var(--text);
+  font: inherit;
+  cursor: pointer;
+}
+
+.preview-download:hover:not(:disabled) {
+  background: #34352f;
+}
+
+.preview-download:disabled {
+  opacity: .6;
+  cursor: wait;
+}
+
+.preview-card-art {
+  width: auto;
+  height: 100%;
+}

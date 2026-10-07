@@ -1,0 +1,119 @@
+[
+  {
+    "id": 1,
+    "name": "Christian",
+    "victoryPoints": 3,
+    "cardCost": {
+      "mercury": 4,
+      "gems": 4,
+      "sulfur": null,
+      "crystal": null,
+      "ore": null
+    },
+    "background": "sprites/heroes/Christian.png"
+  },
+  {
+    "id": 2,
+    "name": "Deemer",
+    "victoryPoints": 3,
+    "cardCost": {
+      "mercury": 3,
+      "gems": null,
+      "sulfur": null,
+      "crystal": 3,
+      "ore": 3
+    },
+    "background": "sprites/heroes/Deemer.png"
+  },
+  {
+    "id": 3,
+    "name": "Gerwulf",
+    "victoryPoints": 3,
+    "cardCost": {
+      "mercury": 3,
+      "gems": 3,
+      "sulfur": null,
+      "crystal": null,
+      "ore": 3
+    },
+    "background": "sprites/heroes/Gerwulf.png"
+  },
+  {
+    "id": 4,
+    "name": "Gurnisson",
+    "victoryPoints": 3,
+    "cardCost": {
+      "mercury": 4,
+      "gems": null,
+      "sulfur": null,
+      "crystal": null,
+      "ore": 4
+    },
+    "background": "sprites/heroes/Gurnisson.png"
+  },
+  {
+    "id": 5,
+    "name": "Iona",
+    "victoryPoints": 3,
+    "cardCost": {
+      "mercury": null,
+      "gems": 4,
+      "sulfur": 4,
+      "crystal": null,
+      "ore": null
+    },
+    "background": "sprites/heroes/Iona.png"
+  },
+  {
+    "id": 6,
+    "name": "Monere",
+    "victoryPoints": 3,
+    "cardCost": {
+      "mercury": null,
+      "gems": null,
+      "sulfur": null,
+      "crystal": 4,
+      "ore": 4
+    },
+    "background": "sprites/heroes/Monere.png"
+  },
+  {
+    "id": 7,
+    "name": "Octavia",
+    "victoryPoints": 3,
+    "cardCost": {
+      "mercury": null,
+      "gems": 3,
+      "sulfur": 3,
+      "crystal": 3,
+      "ore": null
+    },
+    "background": "sprites/heroes/Octavia.png"
+  },
+  {
+    "id": 8,
+    "name": "Sandro",
+    "victoryPoints": 3,
+    "cardCost": {
+      "mercury": null,
+      "gems": null,
+      "sulfur": 3,
+      "crystal": 3,
+      "ore": 3
+    },
+    "background": "sprites/heroes/Sandro.png"
+  },
+  {
+    "id": 9,
+    "name": "Styg",
+    "victoryPoints": 3,
+    "cardCost": {
+      "mercury": 3,
+      "gems": 3,
+      "sulfur": 3,
+      "crystal": null,
+      "ore": null
+    },
+    "background": "sprites/heroes/Styg.png"
+  }
+]
