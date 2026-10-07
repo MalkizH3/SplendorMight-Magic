@@ -278,6 +278,30 @@ h2 {
   gap: clamp(4px,2cqi,6px);
 }
 
+.hero-tile-action {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  display: grid;
+  place-items: center;
+  width: 100%;
+  border: 0;
+  color: #f0e4cc;
+  background: #080907b8;
+  font: 600 13px var(--sans);
+  opacity: 0;
+  visibility: hidden;
+  cursor: pointer;
+  transition: opacity .15s ease, visibility .15s ease;
+}
+
+.hero-tile:hover .hero-tile-action,
+.hero-tile:focus .hero-tile-action,
+.hero-tile:focus-within .hero-tile-action {
+  opacity: 1;
+  visibility: visible;
+}
+
 .hero-cost-chip {
   position: relative;
   display: grid;
@@ -466,6 +490,16 @@ footer {
 
   .topbar-note {
     font-size: 8px;
+  }
+}
+
+@media (hover: none) {
+  .hero-tile-action {
+    inset: auto 0 0;
+    min-height: 34px;
+    background: #080907c9;
+    opacity: 1;
+    visibility: visible;
   }
 }
 

@@ -36,6 +36,9 @@
 
       <section id="game-section" class="game-section" aria-labelledby="game-title">
         <div class="game-section-heading">
+          <button class="game-button game-button-quiet game-back-button" id="game-back-button" type="button" hidden>
+            ← Powrót do ekranu głównego
+          </button>
           <div>
             <p class="game-kicker">ROZGRYWKA ONLINE</p>
             <h2 id="game-title">Stół gry</h2>
@@ -66,6 +69,15 @@
               <p>Utwórz prywatny stół i wyślij znajomym link zaproszenia.</p>
             </div>
             <button class="game-button game-button-primary" id="create-room-button" type="button">Utwórz partię</button>
+          </div>
+          <div class="lobby-resume" id="lobby-resume" hidden>
+            <div class="game-panel-copy">
+              <h3>Partia w toku</h3>
+              <p>Wróć do stołu, aby wykonać ruch i śledzić rozgrywkę.</p>
+            </div>
+            <button class="game-button game-button-primary" id="return-to-game-button" type="button">
+              Wróć do gry
+            </button>
           </div>
           <div class="room-lobby" id="room-lobby" hidden>
             <div class="room-heading">
@@ -119,7 +131,7 @@
               <h3 id="game-heroes-title">Bohaterowie</h3>
               <span>Wizyta na koniec tury</span>
             </div>
-            <div class="game-heroes" id="game-heroes"></div>
+            <div class="hero-grid" id="game-heroes"></div>
           </section>
 
           <section class="player-area" aria-labelledby="player-area-title">

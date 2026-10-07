@@ -39,10 +39,13 @@ import {
   tokenTypes,
 } from "./game-engine.js";
 import { createCardArtwork } from "./card-view.js";
+import { createHeroTile } from "./hero-view.js";
 
 const elements = Object.fromEntries([
-  "game-connection", "game-message", "auth-panel", "sign-in-button", "sign-out-button",
-  "game-profile", "profile-name", "lobby-panel", "lobby-home", "create-room-button",
+  "game-connection", "game-message", "game-section", "game-back-button",
+  "auth-panel", "sign-in-button", "sign-out-button",
+  "game-profile", "profile-name", "lobby-panel", "lobby-home", "lobby-resume",
+  "return-to-game-button", "create-room-button",
   "room-lobby", "lobby-player-count", "lobby-player-list", "invite-link",
   "copy-invite-button", "leave-room-button", "start-game-button", "lobby-hint",
   "game-board", "turn-label", "turn-status", "round-status", "game-players",
@@ -57,6 +60,7 @@ let heroMap = new Map();
 let currentUser = null;
 let currentRoomId = null;
 let currentRoom = null;
+let activeScreen = "home";
 let ownPrivateState = { reservedCardIds: [] };
 let stopRoomListener = null;
 let stopPrivateListener = null;
@@ -240,7 +244,6 @@ function setSignedIn(user) {
   elements["game-profile"].hidden = !user;
   elements["sign-in-button"].hidden = Boolean(user);
   elements["profile-name"].textContent = user?.displayName || user?.email || "Gracz";
-  elements["lobby-panel"].hidden = !user;
 }
 
 async function createRoom() {
@@ -257,6 +260,7 @@ async function createRoom() {
     batch.set(privateRef, { reservedCardIds: [] });
     await batch.commit();
 
+    activeScreen = "home";
     watchRoom(roomRef.id);
   } catch (error) {
     console.error(error);
@@ -272,10 +276,12 @@ async function joinRoom(roomId) {
     const roomRef = roomReference(roomId);
     const ownRef = privateReference(roomId, currentUser.uid);
 
+    let roomStatus = "lobby";
     await runTransaction(db, async (transaction) => {
       const roomSnapshot = await transaction.get(roomRef);
       if (!roomSnapshot.exists()) throw new Error("Nie znaleziono pokoju z tego linku.");
       const room = roomSnapshot.data();
+      roomStatus = room.status;
       const isMember = room.members.some((member) => member.uid === currentUser.uid);
 
       if (!isMember) {
@@ -305,6 +311,7 @@ async function joinRoom(roomId) {
 
     const privateSnapshot = await getDoc(ownRef);
     if (!privateSnapshot.exists()) await setDoc(ownRef, { reservedCardIds: [] });
+    activeScreen = roomStatus === "lobby" ? "home" : "game";
     watchRoom(roomId);
   } catch (error) {
     console.error(error);
@@ -329,7 +336,9 @@ async function startGame() {
       if (room.members.length < 2 || room.members.length > 4) throw new Error("Do gry potrzeba od 2 do 4 osób.");
       transaction.set(roomReference(), createStartedGame(room, cards, heroes));
     });
+    activeScreen = "game";
     showMessage("");
+    renderGame();
   } catch (error) {
     console.error(error);
     showMessage(firebaseErrorMessage(error), "error");
@@ -374,10 +383,16 @@ async function performAction(mutator) {
 
 function renderGame() {
   const hasRoom = Boolean(currentRoom && currentUser);
-  elements["lobby-panel"].hidden = !currentUser || (hasRoom && currentRoom.status !== "lobby");
+  const isStarted = hasRoom && currentRoom.status !== "lobby";
+  const showGameScreen = activeScreen === "game" && isStarted;
+  document.body.classList.toggle("is-game-screen", showGameScreen);
+  elements["game-back-button"].hidden = !showGameScreen;
+  elements["auth-panel"].hidden = Boolean(currentUser) || showGameScreen;
+  elements["lobby-panel"].hidden = !currentUser || showGameScreen;
   elements["lobby-home"].hidden = hasRoom;
   elements["room-lobby"].hidden = !hasRoom || currentRoom.status !== "lobby";
-  elements["game-board"].hidden = !hasRoom || currentRoom.status === "lobby";
+  elements["lobby-resume"].hidden = !isStarted;
+  elements["game-board"].hidden = !showGameScreen;
 
   if (!currentUser) return;
   if (!currentRoom) return;
@@ -520,7 +535,7 @@ function renderPlayers() {
 }
 
 function renderMarket() {
-  elements["market-tiers"].replaceChildren(...[1, 2, 3].map((tier) => {
+  elements["market-tiers"].replaceChildren(...[3, 2, 1].map((tier) => {
     const row = document.createElement("section");
     const tierInfo = document.createElement("div");
     const heading = document.createElement("h4");
@@ -742,38 +757,12 @@ function renderHeroes(paused) {
 
   for (const heroId of currentRoom.availableHeroes) {
     const hero = getHero(heroMap, heroId);
-    const tile = document.createElement("article");
-    const image = document.createElement("img");
-    const detail = document.createElement("div");
-    const cost = document.createElement("div");
-    tile.className = "game-hero-tile";
-    image.src = hero.background;
-    image.alt = hero.name;
-    image.loading = "lazy";
-    detail.className = "game-hero-detail";
-    const points = document.createElement("strong");
-    points.textContent = "+3 pkt";
-    cost.className = "table-card-cost";
-    for (const resource of resources) {
-      const amount = Number(hero.cardCost?.[resource] || 0);
-      if (amount <= 0) continue;
-      const item = document.createElement("span");
-      item.className = "table-cost-item";
-      item.append(makeResourceIcon(resource), document.createTextNode(String(amount)));
-      cost.append(item);
-    }
-    detail.append(points, cost);
-    tile.append(image, detail);
-
-    if (currentRoom.phase === "hero" && currentRoom.pendingResolution?.uid === currentUser.uid &&
-      currentRoom.pendingResolution.heroIds.includes(String(heroId)) && isMyTurn() && !paused) {
-      const choose = makeButton("Wybierz bohatera", "game-button game-button-small game-button-primary");
-      choose.addEventListener("click", () => performAction((game) => {
-        selectHero(game, currentUser.uid, heroId, heroMap);
-      }));
-      tile.append(choose);
-    }
-
+    const canSelect = currentRoom.phase === "hero" &&
+      currentRoom.pendingResolution?.uid === currentUser.uid &&
+      currentRoom.pendingResolution.heroIds.includes(String(heroId)) && isMyTurn() && !paused;
+    const tile = createHeroTile(hero, canSelect ? () => performAction((game) => {
+      selectHero(game, currentUser.uid, heroId, heroMap);
+    }) : null);
     container.append(tile);
   }
 
@@ -999,6 +988,7 @@ function leaveRoomView() {
   stopRoomSubscriptions();
   currentRoomId = null;
   currentRoom = null;
+  activeScreen = "home";
   ownPrivateState = { reservedCardIds: [] };
   setRoomUrl(null);
   renderGame();
@@ -1096,6 +1086,7 @@ async function signOutUser() {
     stopRoomSubscriptions();
     currentRoomId = null;
     currentRoom = null;
+    activeScreen = "home";
     setRoomUrl(null);
     await signOut(auth);
   } catch (error) {
@@ -1125,6 +1116,16 @@ async function bootstrap() {
   elements["start-game-button"].addEventListener("click", startGame);
   elements["copy-invite-button"].addEventListener("click", copyInvite);
   elements["leave-room-button"].addEventListener("click", leaveRoom);
+  elements["game-back-button"].addEventListener("click", () => {
+    activeScreen = "home";
+    renderGame();
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  });
+  elements["return-to-game-button"].addEventListener("click", () => {
+    activeScreen = "game";
+    renderGame();
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  });
   window.addEventListener("online", () => updateConnectionLabel());
   window.addEventListener("offline", () => {
     if (currentUser) presenceByUid.set(currentUser.uid, "offline");
@@ -1138,6 +1139,7 @@ async function bootstrap() {
 
   onAuthStateChanged(auth, async (user) => {
     setSignedIn(user);
+    renderGame();
     if (!user) {
       stopRoomSubscriptions();
       currentRoomId = null;
