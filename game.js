@@ -753,6 +753,7 @@ function availableResourceTypes() {
 
 function renderHeroes(paused) {
   const container = elements["game-heroes"];
+  container.dataset.count = String(currentRoom.availableHeroes.length);
   container.replaceChildren();
 
   for (const heroId of currentRoom.availableHeroes) {
