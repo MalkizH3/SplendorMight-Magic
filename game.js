@@ -467,7 +467,7 @@ function renderBoard() {
     : "";
 
   renderPlayers();
-  renderMarket();
+  renderMarket(paused);
   renderBank();
   renderActions(paused);
   renderHeroes(paused);
@@ -522,16 +522,28 @@ function renderPlayers() {
     ownedCards.className = "player-visible-cards";
     for (const cardId of player.boughtCardIds) {
       const ownedCard = getCard(cardMap, cardId);
-      const badge = document.createElement("div");
-      badge.className = "player-visible-card";
-      badge.tabIndex = 0;
-      badge.setAttribute("aria-label", `Podgląd karty ${ownedCard.id}`);
-      badge.append(
-        createCardArtwork(ownedCard, "sprite-art player-card-thumb"),
-        createCardArtwork(ownedCard, "sprite-art player-card-hover-preview"),
-      );
-      ownedCards.append(badge);
+      ownedCards.append(makePlayerCardBadge(ownedCard));
     }
+
+    const reservations = document.createElement("section");
+    const reservationHeading = document.createElement("div");
+    const reservationLabel = document.createElement("span");
+    const reservationCount = document.createElement("strong");
+    const reservationCards = document.createElement("div");
+    reservations.className = "player-reservations";
+    reservationHeading.className = "player-reservations-heading";
+    reservationLabel.textContent = "Zarezerwowane";
+    reservationCount.textContent = `${player.reservedCount}/3`;
+    reservationCards.className = "player-visible-reservations";
+    reservationHeading.append(reservationLabel, reservationCount);
+
+    if (player.uid === currentUser.uid) {
+      for (const cardId of ownPrivateState.reservedCardIds) {
+        reservationCards.append(makePlayerCardBadge(getCard(cardMap, cardId)));
+      }
+    }
+    reservations.append(reservationHeading, reservationCards);
+
     const ownedHeroes = document.createElement("div");
     ownedHeroes.className = "player-visible-heroes";
     for (const heroId of player.heroIds) {
@@ -539,26 +551,61 @@ function renderPlayers() {
       heroName.textContent = getHero(heroMap, heroId).name;
       ownedHeroes.append(heroName);
     }
-    card.append(heading, tokens, resourceList, ownedCards, ownedHeroes);
+    card.append(heading, tokens, resourceList, ownedCards, reservations, ownedHeroes);
     return card;
   }));
 }
 
-function renderMarket() {
+function makePlayerCardBadge(card) {
+  const badge = document.createElement("div");
+  const display = document.createElement("div");
+  const points = document.createElement("strong");
+  const bonusIcon = makeResourceIcon(card.bonusResource);
+
+  badge.className = "player-visible-card";
+  badge.tabIndex = 0;
+  badge.setAttribute(
+    "aria-label",
+    `${card.victoryPoints} punktów, bonus: ${resourceNames[card.bonusResource]}`,
+  );
+  display.className = "player-card-display";
+  points.className = "player-card-points";
+  points.textContent = Number(card.victoryPoints) > 0 ? String(card.victoryPoints) : "";
+  bonusIcon.classList.add("player-card-bonus-icon");
+  bonusIcon.alt = resourceNames[card.bonusResource];
+  display.append(points, bonusIcon);
+  badge.append(
+    display,
+    createCardArtwork(card, "sprite-art player-card-hover-preview"),
+  );
+  return badge;
+}
+
+function renderMarket(paused) {
   elements["market-tiers"].replaceChildren(...[3, 2, 1].map((tier) => {
     const row = document.createElement("section");
     const tierInfo = document.createElement("div");
     const heading = document.createElement("h4");
     const deckCount = document.createElement("span");
+    const reserveButton = makeButton(
+      "Rezerwuj zakrytą",
+      "game-button game-button-small reserve-deck-button",
+    );
     const cardsGrid = document.createElement("div");
+    const player = currentRoom.players.find((entry) => entry.uid === currentUser.uid);
 
     row.className = "market-tier";
     tierInfo.className = "market-tier-info";
     heading.textContent = `Poziom ${tier}`;
     deckCount.className = "market-deck-count";
     deckCount.textContent = `Talia: ${currentRoom.decks[tier].length}`;
+    reserveButton.disabled = !isMyTurn() || paused || currentRoom.phase !== "action" ||
+      currentRoom.decks[tier].length === 0 || player.reservedCount >= 3;
+    reserveButton.addEventListener("click", () => performAction((game, privateState) => {
+      reserveCard(game, currentUser.uid, privateState, null, heroMap, tier);
+    }));
     cardsGrid.className = "market-card-list";
-    tierInfo.append(heading, deckCount);
+    tierInfo.append(heading, deckCount, reserveButton);
     row.append(tierInfo, cardsGrid);
 
     for (const cardId of currentRoom.market[tier]) {
@@ -737,24 +784,7 @@ function renderActions(paused) {
   }
   twoGroup.append(twoLabel, twoChoices);
 
-  const reserveGroup = document.createElement("div");
-  reserveGroup.className = "action-group";
-  const reserveLabel = document.createElement("p");
-  reserveLabel.textContent = "Zarezerwuj zakrytą kartę";
-  const reserveDecks = document.createElement("div");
-  reserveDecks.className = "reserve-decks";
-  const me = currentRoom.players.find((player) => player.uid === currentUser.uid);
-  for (const tier of [1, 2, 3]) {
-    const button = makeButton(`Poziom ${tier} (${currentRoom.decks[tier].length})`, "game-button game-button-small");
-    button.disabled = !enabled || currentRoom.decks[tier].length === 0 || me.reservedCount >= 3;
-    button.addEventListener("click", () => performAction((game, privateState) => {
-      reserveCard(game, currentUser.uid, privateState, null, heroMap, tier);
-    }));
-    reserveDecks.append(button);
-  }
-  reserveGroup.append(reserveLabel, reserveDecks);
-
-  actions.append(takeGroup, twoGroup, reserveGroup);
+  actions.append(takeGroup, twoGroup);
 }
 
 function availableResourceTypes() {

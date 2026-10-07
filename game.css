@@ -340,7 +340,7 @@ body.is-game-screen .game-board {
 }
 
 .game-hero-grid {
-  --tier-label-width: 82px;
+  --tier-label-width: 112px;
   --tier-column-gap: 10px;
   --market-card-width: 504px;
   display: flex;
@@ -422,19 +422,19 @@ body.is-game-screen .game-board {
 .player-bonuses {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: 9px 10px;
 }
 
 .player-bonuses {
-  margin-top: 10px;
+  margin-top: 13px;
 }
 
 .bonus-count {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
   color: #bcbab0;
-  font: 10px var(--mono);
+  font: 20px/1 var(--mono);
 }
 
 .resource-icon {
@@ -444,8 +444,8 @@ body.is-game-screen .game-board {
 }
 
 .bonus-count .resource-icon {
-  width: 17px;
-  height: 17px;
+  width: 34px;
+  height: 34px;
 }
 
 .player-tokens,
@@ -455,8 +455,8 @@ body.is-game-screen .game-board {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 5px;
-  margin-top: 9px;
+  gap: 9px 10px;
+  margin-top: 13px;
 }
 
 .player-tokens::before,
@@ -465,7 +465,7 @@ body.is-game-screen .game-board {
 .player-visible-heroes::before {
   flex: 0 0 100%;
   color: #8f8f85;
-  font: 8px var(--mono);
+  font: 10px var(--mono);
   letter-spacing: .04em;
 }
 
@@ -477,19 +477,28 @@ body.is-game-screen .game-board {
 .player-token {
   display: inline-flex;
   align-items: center;
-  gap: 2px;
+  gap: 5px;
   color: #c4c1b6;
-  font: 9px var(--mono);
+  font: 20px/1 var(--mono);
 }
 
 .player-token .resource-icon {
-  width: 19px;
-  height: 19px;
+  width: 34px;
+  height: 34px;
 }
 
 .player-visible-card {
   position: relative;
+  display: inline-flex;
   flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  min-width: 82px;
+  min-height: 48px;
+  padding: 2px 7px;
+  border: 1px solid #ffffff18;
+  border-radius: 4px;
+  background: #10110f;
   outline: none;
   cursor: zoom-in;
 }
@@ -499,10 +508,23 @@ body.is-game-screen .game-board {
   z-index: 10;
 }
 
-.player-card-thumb {
-  width: 52px;
-  border-radius: 2px;
-  box-shadow: 0 2px 8px #0008;
+.player-card-display {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+}
+
+.player-card-points {
+  color: #fff;
+  font: italic 30px/1 "Momentum", var(--serif);
+  -webkit-text-stroke: .8px #000;
+  paint-order: stroke fill;
+}
+
+.player-card-bonus-icon {
+  width: 38px;
+  height: 38px;
 }
 
 .player-card-hover-preview {
@@ -522,6 +544,32 @@ body.is-game-screen .game-board {
 .player-visible-card:hover .player-card-hover-preview,
 .player-visible-card:focus-visible .player-card-hover-preview {
   display: block;
+}
+
+.player-reservations {
+  margin-top: 10px;
+}
+
+.player-reservations-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  color: #8f8f85;
+  font: 8px var(--mono);
+}
+
+.player-reservations-heading strong {
+  color: #c7a566;
+  font: 10px var(--mono);
+}
+
+.player-visible-reservations {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 5px;
+  margin-top: 5px;
 }
 
 .player-visible-heroes span {
@@ -609,7 +657,7 @@ body.is-game-screen .game-board {
 
 .market-tier {
   display: grid;
-  grid-template-columns: 82px minmax(0,1fr);
+  grid-template-columns: 112px minmax(0,1fr);
   align-items: start;
   gap: 10px;
   min-width: 0;
@@ -632,6 +680,15 @@ body.is-game-screen .game-board {
   display: block;
   color: #84847c;
   font: 9px var(--mono);
+}
+
+.reserve-deck-button {
+  width: 100%;
+  min-height: 29px;
+  padding: 3px 5px;
+  font-size: 9px;
+  line-height: 1.2;
+  white-space: normal;
 }
 
 .market-card-list {
@@ -828,8 +885,7 @@ body.is-game-screen .game-board {
   height: 18px;
 }
 
-.same-resource-choices,
-.reserve-decks {
+.same-resource-choices {
   display: grid;
   grid-template-columns: repeat(2,minmax(0,1fr));
   gap: 5px;
@@ -946,7 +1002,7 @@ body.is-game-screen .game-board {
   }
 
   .game-hero-grid {
-    --tier-label-width: 82px;
+    --tier-label-width: 112px;
     --tier-column-gap: 10px;
     --market-card-width: 221px;
   }
@@ -997,8 +1053,13 @@ body.is-game-screen .game-board {
   }
 
   .market-tier {
-    grid-template-columns: 64px minmax(0,1fr);
+    grid-template-columns: 104px minmax(0,1fr);
     gap: 7px;
+  }
+
+  .game-hero-grid {
+    --tier-label-width: 104px;
+    --tier-column-gap: 7px;
   }
 
   .market-card-list {
@@ -1010,9 +1071,6 @@ body.is-game-screen .game-board {
   }
 
   .game-hero-grid {
-    --tier-label-width: 64px;
-    --tier-column-gap: 7px;
-    --market-card-width: 221px;
     gap: 6px;
   }
 
