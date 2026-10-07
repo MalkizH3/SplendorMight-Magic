@@ -9,8 +9,7 @@ export const firebaseConfig = {
   messagingSenderId: "959670450964",
   appId: "1:959670450964:web:87a8a7e1e8caebf627e001",
   measurementId: "G-82BQNFX9DC",
-  // Add the Realtime Database URL from Firebase Console to enable presence tracking.
-  databaseURL: "",
+  databaseURL: "https://splendormandm-default-rtdb.europe-west1.firebasedatabase.app",
 };
 
 export const useFirebaseEmulators = false;
