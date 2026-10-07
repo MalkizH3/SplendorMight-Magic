@@ -419,8 +419,7 @@ body.is-game-screen .game-board {
   font: 10px var(--mono);
 }
 
-.player-bonuses,
-.own-token-row {
+.player-bonuses {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
@@ -430,8 +429,7 @@ body.is-game-screen .game-board {
   margin-top: 10px;
 }
 
-.bonus-count,
-.own-token {
+.bonus-count {
   display: inline-flex;
   align-items: center;
   gap: 4px;
@@ -450,35 +448,80 @@ body.is-game-screen .game-board {
   height: 17px;
 }
 
-.player-card-summary {
-  margin: 9px 0 0;
-  color: #898980;
-  font-size: 10px;
-}
-
+.player-tokens,
+.player-bonuses,
 .player-visible-cards,
 .player-visible-heroes {
   display: flex;
   flex-wrap: wrap;
-  gap: 4px;
-  margin-top: 7px;
+  align-items: center;
+  gap: 5px;
+  margin-top: 9px;
 }
 
-.player-visible-card {
+.player-tokens::before,
+.player-bonuses::before,
+.player-visible-cards::before,
+.player-visible-heroes::before {
+  flex: 0 0 100%;
+  color: #8f8f85;
+  font: 8px var(--mono);
+  letter-spacing: .04em;
+}
+
+.player-tokens::before { content: "Żetony"; }
+.player-bonuses::before { content: "Bonusy"; }
+.player-visible-cards::before { content: "Kupione karty"; }
+.player-visible-heroes::before { content: "Bohaterowie"; }
+
+.player-token {
   display: inline-flex;
   align-items: center;
   gap: 2px;
-  padding: 2px 4px;
-  border: 1px solid #ffffff14;
-  border-radius: 3px;
-  color: #d1cec3;
-  background: #ffffff06;
+  color: #c4c1b6;
   font: 9px var(--mono);
 }
 
-.player-visible-card .resource-icon {
-  width: 15px;
-  height: 15px;
+.player-token .resource-icon {
+  width: 19px;
+  height: 19px;
+}
+
+.player-visible-card {
+  position: relative;
+  flex: 0 0 auto;
+  outline: none;
+  cursor: zoom-in;
+}
+
+.player-visible-card:hover,
+.player-visible-card:focus-visible {
+  z-index: 10;
+}
+
+.player-card-thumb {
+  width: 52px;
+  border-radius: 2px;
+  box-shadow: 0 2px 8px #0008;
+}
+
+.player-card-hover-preview {
+  position: absolute;
+  z-index: 20;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  display: none;
+  width: 190px;
+  border: 1px solid #c7a56699;
+  border-radius: 3px;
+  box-shadow: 0 12px 36px #000c;
+  pointer-events: none;
+  transform: translateX(-50%);
+}
+
+.player-visible-card:hover .player-card-hover-preview,
+.player-visible-card:focus-visible .player-card-hover-preview {
+  display: block;
 }
 
 .player-visible-heroes span {
@@ -491,7 +534,7 @@ body.is-game-screen .game-board {
 
 .board-layout {
   display: grid;
-  grid-template-columns: minmax(0,1fr) minmax(270px,310px);
+  grid-template-columns: max-content minmax(430px,1fr);
   align-items: start;
   gap: 14px;
 }
@@ -505,11 +548,16 @@ body.is-game-screen .game-board {
   background: #151614;
 }
 
+.market-panel {
+  width: max-content;
+  max-width: 100%;
+  justify-self: start;
+}
+
 .heroes-panel,
 .market-cards,
 .players-panel,
-.bank-panel,
-.player-area {
+.bank-panel {
   min-width: 0;
 }
 
@@ -520,7 +568,18 @@ body.is-game-screen .game-board {
 }
 
 .resources-panel {
+  grid-template-columns: minmax(0,1.2fr) minmax(0,1fr);
   gap: 18px;
+}
+
+.players-panel {
+  grid-column: 1;
+  grid-row: 1;
+}
+
+.bank-panel {
+  grid-column: 2;
+  grid-row: 1;
 }
 
 .resources-panel .game-subheading {
@@ -563,10 +622,7 @@ body.is-game-screen .game-board {
 }
 
 .market-tier h4,
-.game-actions h4,
-.owned-cards h4,
-.owned-reservations h4,
-.owned-heroes h4 {
+.game-actions h4 {
   margin: 0;
   color: #d7d3c8;
   font: 500 12px var(--serif);
@@ -779,73 +835,6 @@ body.is-game-screen .game-board {
   gap: 5px;
 }
 
-.player-area-content {
-  display: grid;
-  gap: 15px;
-}
-
-.own-token-row {
-  padding-bottom: 11px;
-  border-bottom: 1px solid #ffffff12;
-}
-
-.own-token {
-  gap: 6px;
-  min-width: 70px;
-  font-size: 12px;
-}
-
-.own-token .resource-icon {
-  width: 28px;
-  height: 28px;
-}
-
-.owned-card-list,
-.owned-hero-list,
-.reserved-card-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 7px;
-  margin-top: 7px;
-}
-
-.owned-card-chip,
-.owned-hero-list > img {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  min-height: 42px;
-  padding: 4px;
-  border: 1px solid #ffffff20;
-  border-radius: 3px;
-  color: #c8c5ba;
-  background: #10110f;
-  font: 9px var(--mono);
-}
-
-.owned-card-chip > img:first-child {
-  width: 25px;
-  height: 34px;
-  border-radius: 2px;
-  object-fit: cover;
-}
-
-.owned-card-chip > .resource-icon {
-  width: 18px;
-  height: 18px;
-}
-
-.owned-hero-list > img {
-  width: 58px;
-  aspect-ratio: 1;
-  padding: 0;
-  object-fit: cover;
-}
-
-.reserved-card-list .table-card {
-  width: min(100%, 290px);
-}
-
 .game-resolution,
 .game-finished {
   padding: 15px;
@@ -917,7 +906,7 @@ body.is-game-screen .game-board {
   font: 11px var(--mono);
 }
 
-@media (max-width: 980px) {
+@media (max-width: 1100px) {
   .board-layout {
     grid-template-columns: 1fr;
   }
@@ -939,6 +928,16 @@ body.is-game-screen .game-board {
 
   .game-players {
     grid-template-columns: 1fr;
+  }
+
+  .resources-panel {
+    grid-template-columns: 1fr;
+  }
+
+  .players-panel,
+  .bank-panel {
+    grid-column: 1;
+    grid-row: auto;
   }
 
   .market-card-list {

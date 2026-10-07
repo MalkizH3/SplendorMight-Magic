@@ -50,7 +50,7 @@ const elements = Object.fromEntries([
   "copy-invite-button", "leave-room-button", "start-game-button", "lobby-hint",
   "game-board", "turn-label", "turn-status", "round-status", "game-players",
   "market-tiers", "bank-resources", "game-actions", "game-heroes",
-  "player-area-summary", "player-area-content", "game-resolution", "game-finished",
+  "game-resolution", "game-finished",
 ].map((id) => [id, document.getElementById(id)]));
 
 let cards = [];
@@ -471,7 +471,6 @@ function renderBoard() {
   renderBank();
   renderActions(paused);
   renderHeroes(paused);
-  renderPlayerArea();
   renderResolution(paused);
   renderFinished();
   updateConnectionLabel(paused);
@@ -507,19 +506,30 @@ function renderPlayers() {
       resourceList.append(bonus);
     }
 
-    const details = document.createElement("p");
-    details.className = "player-card-summary";
-    details.textContent = `Znaczniki: ${sumTokens(player.tokens)} · Karty: ${player.boughtCardIds.length} · Rezerwacje: ${player.reservedCount}`;
+    const tokens = document.createElement("div");
+    tokens.className = "player-tokens";
+    for (const type of tokenTypes) {
+      const token = document.createElement("span");
+      const count = document.createElement("b");
+      token.className = "player-token";
+      token.title = resourceNames[type];
+      count.textContent = String(player.tokens[type]);
+      token.append(makeResourceIcon(type), count);
+      tokens.append(token);
+    }
+
     const ownedCards = document.createElement("div");
     ownedCards.className = "player-visible-cards";
     for (const cardId of player.boughtCardIds) {
       const ownedCard = getCard(cardMap, cardId);
-      const badge = document.createElement("span");
-      const points = document.createElement("b");
+      const badge = document.createElement("div");
       badge.className = "player-visible-card";
-      badge.title = `Karta ${ownedCard.id}: ${ownedCard.victoryPoints} pkt`;
-      points.textContent = String(ownedCard.victoryPoints);
-      badge.append(points, makeResourceIcon(ownedCard.bonusResource));
+      badge.tabIndex = 0;
+      badge.setAttribute("aria-label", `Podgląd karty ${ownedCard.id}`);
+      badge.append(
+        createCardArtwork(ownedCard, "sprite-art player-card-thumb"),
+        createCardArtwork(ownedCard, "sprite-art player-card-hover-preview"),
+      );
       ownedCards.append(badge);
     }
     const ownedHeroes = document.createElement("div");
@@ -529,7 +539,7 @@ function renderPlayers() {
       heroName.textContent = getHero(heroMap, heroId).name;
       ownedHeroes.append(heroName);
     }
-    card.append(heading, resourceList, details, ownedCards, ownedHeroes);
+    card.append(heading, tokens, resourceList, ownedCards, ownedHeroes);
     return card;
   }));
 }
@@ -775,81 +785,6 @@ function renderHeroes(paused) {
   }
 }
 
-function renderPlayerArea() {
-  const me = currentGamePlayer();
-  if (!me) return;
-  elements["player-area-summary"].textContent = `${sumTokens(me.tokens)}/10 znaczników · ${me.points} punktów`;
-  const content = elements["player-area-content"];
-  content.replaceChildren();
-
-  const tokenRow = document.createElement("div");
-  tokenRow.className = "own-token-row";
-  for (const type of tokenTypes) {
-    const item = document.createElement("span");
-    item.className = "own-token";
-    item.append(makeResourceIcon(type), document.createTextNode(String(me.tokens[type])));
-    tokenRow.append(item);
-  }
-
-  const cardsSection = document.createElement("div");
-  cardsSection.className = "owned-cards";
-  const cardsHeading = document.createElement("h4");
-  cardsHeading.textContent = `Zakupione karty (${me.boughtCardIds.length})`;
-  cardsSection.append(cardsHeading);
-  const boughtList = document.createElement("div");
-  boughtList.className = "owned-card-list";
-  for (const cardId of me.boughtCardIds) {
-    const card = getCard(cardMap, cardId);
-    const badge = document.createElement("span");
-    const image = document.createElement("img");
-    const points = document.createElement("strong");
-    badge.className = "owned-card-chip";
-    image.src = card.background;
-    image.alt = "";
-    image.title = `Karta ${card.id}`;
-    image.loading = "lazy";
-    points.textContent = `${card.victoryPoints} pkt`;
-    const bonus = makeResourceIcon(card.bonusResource);
-    bonus.title = `Bonus: ${resourceNames[card.bonusResource]}`;
-    badge.append(image, points, bonus);
-    boughtList.append(badge);
-  }
-  if (!me.boughtCardIds.length) boughtList.append(makeEmptyNote("Nie masz jeszcze kart."));
-  cardsSection.append(boughtList);
-
-  const reserveSection = document.createElement("div");
-  reserveSection.className = "owned-reservations";
-  const reserveHeading = document.createElement("h4");
-  reserveHeading.textContent = `Zarezerwowane karty (${ownPrivateState.reservedCardIds.length})`;
-  const reserveList = document.createElement("div");
-  reserveList.className = "reserved-card-list";
-  reserveSection.append(reserveHeading, reserveList);
-
-  for (const cardId of ownPrivateState.reservedCardIds) {
-    reserveList.append(makeTableCard(getCard(cardMap, cardId), "reserved"));
-  }
-  if (!ownPrivateState.reservedCardIds.length) reserveList.append(makeEmptyNote("Nie masz zarezerwowanych kart."));
-
-  const heroSection = document.createElement("div");
-  heroSection.className = "owned-heroes";
-  const heroHeading = document.createElement("h4");
-  heroHeading.textContent = `Pozyskani bohaterowie (${me.heroIds.length})`;
-  const heroList = document.createElement("div");
-  heroList.className = "owned-hero-list";
-  for (const heroId of me.heroIds) {
-    const hero = getHero(heroMap, heroId);
-    const image = document.createElement("img");
-    image.src = hero.background;
-    image.alt = hero.name;
-    image.title = `${hero.name} · 3 punkty`;
-    image.loading = "lazy";
-    heroList.append(image);
-  }
-  if (!me.heroIds.length) heroList.append(makeEmptyNote("Nie masz jeszcze bohaterów."));
-  heroSection.append(heroHeading, heroList);
-  content.append(tokenRow, cardsSection, reserveSection, heroSection);
-}
-
 function renderResolution(paused) {
   const panel = elements["game-resolution"];
   panel.hidden = true;
@@ -1054,10 +989,6 @@ function makeEmptyNote(text) {
   note.className = "game-empty-note";
   note.textContent = text;
   return note;
-}
-
-function sumTokens(tokens) {
-  return tokenTypes.reduce((sum, type) => sum + Number(tokens[type] || 0), 0);
 }
 
 function firebaseErrorMessage(error) {
