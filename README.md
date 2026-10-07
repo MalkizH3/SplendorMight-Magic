@@ -9,9 +9,9 @@ Gra online wymaga własnego projektu Firebase. W projekcie Firebase:
 1. Włącz logowanie Google w **Authentication → Sign-in method**.
 2. Dodaj domenę publikacji GitHub Pages do **Authentication → Settings → Authorized domains**.
 3. Utwórz bazę **Cloud Firestore** w trybie produkcyjnym.
-4. Utwórz **Realtime Database**. Ustawienia aplikacji Web Firebase są już wpisane do `firebase-config.js`. Skopiuj `databaseURL` z konsoli i wklej do tego pliku, aby włączyć wykrywanie obecności graczy i pauzowanie partii po rozłączeniu. Do samej autentykacji i Firestore ten adres nie jest potrzebny.
-5. Dodaj domenę publikacji GitHub Pages oraz `localhost` i `127.0.0.1` do **Authentication → Settings → Authorized domains**.
-6. Zainstaluj Firebase CLI, zaloguj się i ustaw projekt `splendormandm` jako domyślny dla katalogu. Wdroż reguły poleceniem `firebase deploy --only firestore:rules,database`.
+4. Utwórz **Realtime Database**. Baza służy wyłącznie do wykrywania obecności graczy i pauzowania partii po rozłączeniu.
+5. Skopiuj konfigurację aplikacji Web Firebase do `firebase-config.js`. `databaseURL` skopiuj z ustawień Realtime Database. Konfiguracja webowa jest publiczna; nie wklejaj tu klucza konta serwisowego ani prywatnego klucza. Do lokalnego podglądu dodaj również `localhost` oraz `127.0.0.1` do autoryzowanych domen.
+6. Zainstaluj Firebase CLI, zaloguj się i ustaw projekt jako domyślny dla katalogu. Wdroż reguły poleceniem `firebase deploy --only firestore:rules,database`.
 7. Opublikuj katalog główny repozytorium w GitHub Pages.
 
 Cloud Functions nie są używane. Nie trzeba dodawać projektu ani danych logowania do kodu klienta poza publiczną konfiguracją Web SDK.

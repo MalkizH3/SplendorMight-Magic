@@ -38,6 +38,7 @@ import {
   takeTwoResources,
   tokenTypes,
 } from "./game-engine.js";
+import { createCardArtwork } from "./card-view.js";
 
 const elements = Object.fromEntries([
   "game-connection", "game-message", "auth-panel", "sign-in-button", "sign-out-button",
@@ -520,21 +521,24 @@ function renderPlayers() {
 
 function renderMarket() {
   elements["market-tiers"].replaceChildren(...[1, 2, 3].map((tier) => {
-    const column = document.createElement("section");
+    const row = document.createElement("section");
+    const tierInfo = document.createElement("div");
     const heading = document.createElement("h4");
     const deckCount = document.createElement("span");
     const cardsGrid = document.createElement("div");
 
-    column.className = "market-tier";
+    row.className = "market-tier";
+    tierInfo.className = "market-tier-info";
     heading.textContent = `Poziom ${tier}`;
     deckCount.className = "market-deck-count";
     deckCount.textContent = `Talia: ${currentRoom.decks[tier].length}`;
     cardsGrid.className = "market-card-list";
-    column.append(heading, deckCount, cardsGrid);
+    tierInfo.append(heading, deckCount);
+    row.append(tierInfo, cardsGrid);
 
     for (const cardId of currentRoom.market[tier]) {
       const gameCard = getCard(cardMap, cardId);
-      cardsGrid.append(makeTableCard(gameCard, "market"));
+      cardsGrid.append(makeMarketCard(gameCard));
     }
 
     if (!currentRoom.market[tier].length) {
@@ -544,8 +548,38 @@ function renderMarket() {
       cardsGrid.append(empty);
     }
 
-    return column;
+    return row;
   }));
+}
+
+function makeMarketCard(card) {
+  const article = document.createElement("article");
+  const artwork = createCardArtwork(card, "market-card-art");
+  const actions = document.createElement("div");
+  const player = currentRoom.players.find((entry) => entry.uid === currentUser.uid);
+  const canBuy = Boolean(getPayment(card, player));
+
+  article.className = "market-card";
+  article.setAttribute("aria-label", `Karta ${card.id}`);
+  article.tabIndex = 0;
+  actions.className = "market-card-actions";
+
+  const buyButton = makeButton("Kup", "game-button game-button-small game-button-primary");
+  buyButton.disabled = !isMyTurn() || currentRoom.phase !== "action" || !canBuy;
+  buyButton.addEventListener("click", () => performAction((game, privateState) => {
+    buyCard(game, currentUser.uid, privateState, cardMap, card.id, "market", heroMap);
+  }));
+  actions.append(buyButton);
+
+  const reserveButton = makeButton("Rezerwuj", "game-button game-button-small");
+  reserveButton.disabled = !isMyTurn() || currentRoom.phase !== "action" || player.reservedCount >= 3;
+  reserveButton.addEventListener("click", () => performAction((game, privateState) => {
+    reserveCard(game, currentUser.uid, privateState, card.id, heroMap);
+  }));
+  actions.append(reserveButton);
+
+  article.append(artwork, actions);
+  return article;
 }
 
 function makeTableCard(card, source) {
