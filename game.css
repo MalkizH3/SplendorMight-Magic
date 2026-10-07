@@ -177,6 +177,23 @@ body.is-game-screen .game-board {
   padding: 20px;
 }
 
+.lobby-resume-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.game-button-danger {
+  border-color: #b85c555e;
+  color: #e5aaa3;
+}
+
+.game-button-danger:hover:not(:disabled) {
+  border-color: #d7786e;
+  color: #ffe1dd;
+  background: #b64b421c;
+}
+
 .game-panel-copy h3,
 .room-heading h3 {
   margin: 0;
@@ -527,23 +544,38 @@ body.is-game-screen .game-board {
   height: 38px;
 }
 
-.player-card-hover-preview {
+.player-card-hover-card {
   position: absolute;
   z-index: 20;
   bottom: calc(100% + 8px);
   left: 50%;
   display: none;
   width: 190px;
+  transform: translateX(-50%);
+}
+
+.player-card-hover-preview {
+  position: relative;
+  width: 100%;
   border: 1px solid #c7a56699;
   border-radius: 3px;
   box-shadow: 0 12px 36px #000c;
   pointer-events: none;
-  transform: translateX(-50%);
 }
 
-.player-visible-card:hover .player-card-hover-preview,
-.player-visible-card:focus-visible .player-card-hover-preview {
+.player-visible-card:hover .player-card-hover-card,
+.player-visible-card:focus-visible .player-card-hover-card,
+.player-visible-card:focus-within .player-card-hover-card {
   display: block;
+}
+
+.player-card-hover-buy {
+  position: absolute;
+  bottom: 9px;
+  left: 50%;
+  z-index: 2;
+  width: min(calc(100% - 16px), 110px);
+  transform: translateX(-50%);
 }
 
 .player-reservations {
@@ -943,8 +975,29 @@ body.is-game-screen .game-board {
 }
 
 .discard-dialog::backdrop {
-  background: #050605d9;
-  backdrop-filter: blur(3px);
+  background: #05060599;
+}
+
+.discard-dialog-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.discard-dialog-heading h3 {
+  margin: 0;
+}
+
+.discard-token-counter {
+  flex: 0 0 auto;
+  padding: 7px 9px;
+  border: 1px solid #c7a56666;
+  border-radius: 4px;
+  color: #ead7b2;
+  background: #c7a56612;
+  font: 11px var(--mono);
 }
 
 .discard-dialog .discard-choices {

@@ -70,9 +70,7 @@ service cloud.firestore {
       );
 
       allow delete: if signedIn()
-        && request.auth.uid == resource.data.hostUid
-        && resource.data.status == 'lobby'
-        && resource.data.memberUids.size() == 1;
+        && request.auth.uid in resource.data.memberUids;
 
       match /private/{playerUid} {
         allow get: if signedIn()
@@ -83,9 +81,27 @@ service cloud.firestore {
           && request.auth.uid == playerUid
           && (isRoomMember(roomId) || isRoomMemberAfter(roomId));
         allow delete: if signedIn()
-          && request.auth.uid == playerUid
-          && isRoomMember(roomId);
+          && isRoomMember(roomId)
+          && (
+            request.auth.uid == playerUid
+            || !roomExistsAfter(roomId)
+          );
       }
+    }
+
+    match /roomClosures/{roomId} {
+      allow get: if signedIn()
+        && request.auth.uid in resource.data.memberUids;
+      allow list: if false;
+      allow create: if signedIn()
+        && roomExists(roomId)
+        && !roomExistsAfter(roomId)
+        && isRoomMember(roomId)
+        && request.resource.data.memberUids
+          == get(/databases/$(database)/documents/rooms/$(roomId)).data.memberUids
+        && request.resource.data.closedByUid == request.auth.uid
+        && request.resource.data.closedByName is string;
+      allow update, delete: if false;
     }
   }
 }

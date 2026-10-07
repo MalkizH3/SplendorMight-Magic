@@ -45,7 +45,7 @@ const elements = Object.fromEntries([
   "game-connection", "game-message", "game-section", "game-back-button",
   "auth-panel", "sign-in-button", "sign-out-button",
   "game-profile", "profile-name", "lobby-panel", "lobby-home", "lobby-resume",
-  "return-to-game-button", "create-room-button",
+  "return-to-game-button", "leave-game-button", "create-room-button",
   "room-lobby", "lobby-player-count", "lobby-player-list", "invite-link",
   "copy-invite-button", "leave-room-button", "start-game-button", "lobby-hint",
   "game-board", "turn-label", "turn-status", "round-status", "game-players",
@@ -126,11 +126,26 @@ function watchRoom(roomId) {
   stopRoomSubscriptions();
   currentRoomId = roomId;
   setRoomUrl(roomId);
-  stopRoomListener = onSnapshot(roomReference(roomId), (snapshot) => {
+  stopRoomListener = onSnapshot(roomReference(roomId), async (snapshot) => {
     if (!snapshot.exists()) {
+      let closure = null;
+      try {
+        const closureSnapshot = await getDoc(doc(db, "roomClosures", roomId));
+        if (closureSnapshot.exists()) closure = closureSnapshot.data();
+      } catch (error) {
+        console.error(error);
+      }
+      if (currentRoomId !== roomId) return;
+
       currentRoom = null;
-      showMessage("Ten pokój już nie istnieje.", "error");
       leaveRoomView();
+      if (closure?.closedByUid && closure.closedByUid !== currentUser?.uid) {
+        window.alert(`Zakończono: gracz ${closure.closedByName || "Gracz"} opuścił grę.`);
+      } else if (closure?.closedByUid === currentUser?.uid) {
+        showMessage("Partia została zamknięta i usunięta dla wszystkich graczy.");
+      } else {
+        showMessage("Partia została zamknięta.");
+      }
       return;
     }
 
@@ -547,7 +562,7 @@ function renderPlayers() {
 
     if (player.uid === currentUser.uid) {
       for (const cardId of ownPrivateState.reservedCardIds) {
-        reservationCards.append(makePlayerCardBadge(getCard(cardMap, cardId)));
+        reservationCards.append(makePlayerCardBadge(getCard(cardMap, cardId), true));
       }
     }
     reservations.append(reservationHeading, reservationCards);
@@ -564,9 +579,10 @@ function renderPlayers() {
   }));
 }
 
-function makePlayerCardBadge(card) {
+function makePlayerCardBadge(card, isReserved = false) {
   const badge = document.createElement("div");
   const display = document.createElement("div");
+  const hoverCard = document.createElement("div");
   const points = document.createElement("strong");
   const bonusIcon = makeResourceIcon(card.bonusResource);
 
@@ -582,10 +598,20 @@ function makePlayerCardBadge(card) {
   bonusIcon.classList.add("player-card-bonus-icon");
   bonusIcon.alt = resourceNames[card.bonusResource];
   display.append(points, bonusIcon);
-  badge.append(
-    display,
-    createCardArtwork(card, "sprite-art player-card-hover-preview"),
-  );
+  hoverCard.className = "player-card-hover-card";
+  hoverCard.append(createCardArtwork(card, "sprite-art player-card-hover-preview"));
+
+  if (isReserved && isMyTurn() && currentRoom.phase === "action") {
+    const buyButton = makeButton("Kup", "game-button game-button-primary player-card-hover-buy");
+    const player = currentRoom.players.find((entry) => entry.uid === currentUser.uid);
+    buyButton.disabled = !getPayment(card, player);
+    buyButton.addEventListener("click", () => performAction((game, privateState) => {
+      buyCard(game, currentUser.uid, privateState, cardMap, card.id, "reserved", heroMap);
+    }));
+    hoverCard.append(buyButton);
+  }
+
+  badge.append(display, hoverCard);
   return badge;
 }
 
@@ -875,6 +901,7 @@ function renderResolution(paused) {
 
   const pending = currentRoom.pendingResolution;
   const title = document.createElement("h3");
+  const dialogHeading = document.createElement("div");
   const content = document.createElement("div");
   panel.className = "game-resolution";
 
@@ -894,6 +921,15 @@ function renderResolution(paused) {
     }
     title.textContent = `Odrzuć dokładnie ${pending.count} znaczników`;
     title.id = "discard-title";
+    dialogHeading.className = "discard-dialog-heading";
+    const tokenCounter = document.createElement("strong");
+    tokenCounter.className = "discard-token-counter";
+    const heldTokens = tokenTypes.reduce(
+      (sum, type) => sum + Number(currentGamePlayer().tokens[type] || 0),
+      0,
+    );
+    tokenCounter.textContent = `Żetony: ${heldTokens}/10`;
+    dialogHeading.append(title, tokenCounter);
     content.className = "discard-choices";
 
     for (const type of tokenTypes) {
@@ -928,7 +964,8 @@ function renderResolution(paused) {
     }));
     const selectedTotal = tokenTypes.reduce((sum, type) => sum + discardSelection[type], 0);
     submit.disabled = selectedTotal !== pending.count;
-    discardDialog.append(title, content, submit);
+    discardDialog.append(dialogHeading, content, submit);
+    discardDialog._tokenCounter = tokenCounter;
     discardDialog._submitButton = submit;
     if (!discardDialog.dataset.cancelGuard) {
       discardDialog.addEventListener("cancel", (event) => {
@@ -960,6 +997,11 @@ function updateDiscardSelection(type, delta, amountElement, minusButton, plusBut
   plusButton.disabled = next >= available || total + delta >= required;
   const selectedTotal = tokenTypes.reduce((sum, key) => sum + discardSelection[key], 0);
   elements["discard-dialog"]._submitButton.disabled = selectedTotal !== required;
+  const heldTotal = tokenTypes.reduce(
+    (sum, key) => sum + Number(currentGamePlayer().tokens[key] || 0),
+    0,
+  );
+  elements["discard-dialog"]._tokenCounter.textContent = `Żetony: ${heldTotal - selectedTotal}/10`;
 
   for (const row of elements["discard-dialog"].querySelectorAll(".discard-row")) {
     const rowType = tokenTypes.find((key) => row.querySelector(".discard-resource")?.textContent.startsWith(resourceNames[key]));
@@ -1068,6 +1110,52 @@ async function leaveRoom() {
   }
 }
 
+async function leaveGame() {
+  if (!currentRoomId || !currentRoom || !currentUser) return;
+  const shouldLeave = window.confirm(
+    "Opuszczenie gry zamknie pokój i usunie całą partię dla wszystkich graczy. " +
+    "Nie będzie można wrócić do tego zapisu. Czy na pewno chcesz opuścić grę?",
+  );
+  if (!shouldLeave) return;
+
+  const roomId = currentRoomId;
+  const gameRef = roomReference(roomId);
+
+  try {
+    const snapshot = await getDoc(gameRef);
+    if (!snapshot.exists()) {
+      leaveRoomView();
+      showMessage("Ta partia została już zamknięta.");
+      return;
+    }
+
+    const room = snapshot.data();
+    if (!room.memberUids.includes(currentUser.uid)) {
+      throw new Error("Nie jesteś już uczestnikiem tej partii.");
+    }
+
+    const batch = writeBatch(db);
+    const leavingPlayer = room.players.find((player) => player.uid === currentUser.uid);
+    batch.set(doc(db, "roomClosures", roomId), {
+      memberUids: room.memberUids,
+      closedByUid: currentUser.uid,
+      closedByName: leavingPlayer?.name || currentUser.displayName || "Gracz",
+      closedAt: serverTimestamp(),
+    });
+    for (const uid of room.memberUids) {
+      batch.delete(privateReference(roomId, uid));
+    }
+    batch.delete(gameRef);
+    await batch.commit();
+
+    leaveRoomView();
+    showMessage("Partia została zamknięta i usunięta dla wszystkich graczy.");
+  } catch (error) {
+    console.error(error);
+    showMessage(firebaseErrorMessage(error), "error");
+  }
+}
+
 function makeResourceIcon(type) {
   const icon = document.createElement("img");
   icon.className = "resource-icon";
@@ -1149,6 +1237,7 @@ async function bootstrap() {
   elements["start-game-button"].addEventListener("click", startGame);
   elements["copy-invite-button"].addEventListener("click", copyInvite);
   elements["leave-room-button"].addEventListener("click", leaveRoom);
+  elements["leave-game-button"].addEventListener("click", leaveGame);
   elements["game-back-button"].addEventListener("click", () => {
     activeScreen = "home";
     renderGame();

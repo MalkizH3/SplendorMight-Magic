@@ -75,9 +75,14 @@
               <h3>Partia w toku</h3>
               <p>Wróć do stołu, aby wykonać ruch i śledzić rozgrywkę.</p>
             </div>
-            <button class="game-button game-button-primary" id="return-to-game-button" type="button">
-              Wróć do gry
-            </button>
+            <div class="lobby-resume-actions">
+              <button class="game-button game-button-primary" id="return-to-game-button" type="button">
+                Wróć do gry
+              </button>
+              <button class="game-button game-button-danger" id="leave-game-button" type="button">
+                Opuść grę
+              </button>
+            </div>
           </div>
           <div class="room-lobby" id="room-lobby" hidden>
             <div class="room-heading">
@@ -233,7 +238,7 @@
       </div>
     </dialog>
 
-    <script type="module" src="app.js"></script>
+    <script type="module" src="app.js?v=heroes-gallery"></script>
     <script type="module" src="game.js"></script>
   </body>
 </html>

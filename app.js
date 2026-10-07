@@ -48,13 +48,13 @@ async function initializeHeroes() {
   try {
     const heroes = await loadHeroes();
     heroCount.textContent = String(heroes.length).padStart(2, "0");
-    heroGrid.replaceChildren(...heroes.map(createHeroTile));
+    heroGrid.replaceChildren(...heroes.map((hero) => createHeroTile(hero)));
   } catch (error) {
     console.error(error);
     heroCount.textContent = "00";
     const message = document.createElement("p");
     message.className = "hero-load-error";
-    message.textContent = "Nie można wczytać heroes.json.";
+    message.textContent = `Nie można wczytać heroes.json: ${error.message}`;
     heroGrid.replaceChildren(message);
   }
 }
