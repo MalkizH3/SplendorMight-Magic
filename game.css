@@ -553,15 +553,15 @@ body.is-game-screen .game-board {
 .player-reservations-heading {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  color: #8f8f85;
-  font: 8px var(--mono);
+  justify-content: flex-start;
+  gap: 5px;
+  color: #bcbab0;
+  font: 11px var(--mono);
 }
 
 .player-reservations-heading strong {
   color: #c7a566;
-  font: 10px var(--mono);
+  font: 11px var(--mono);
 }
 
 .player-visible-reservations {
@@ -817,24 +817,95 @@ body.is-game-screen .game-board {
 .bank-resources {
   display: grid;
   grid-template-columns: repeat(3,minmax(0,1fr));
-  gap: 6px;
+  gap: 8px;
 }
 
 .bank-resource {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 5px;
+  gap: 8px;
   min-width: 0;
-  padding: 6px 7px;
+  min-height: 64px;
+  padding: 8px 10px;
   border: 1px solid #ffffff13;
   border-radius: 4px;
+  color: #ece9df;
   background: #1b1c19;
+  font: inherit;
+  text-align: left;
+  transition: border-color .15s ease, box-shadow .15s ease, opacity .15s ease;
 }
 
 .bank-resource strong {
   color: #ece9df;
-  font: 11px var(--mono);
+  font: 16px var(--mono);
+}
+
+.bank-resource .resource-icon {
+  width: 34px;
+  height: 34px;
+}
+
+.bank-resource.is-selectable {
+  border-color: #fff;
+  box-shadow: 0 0 0 1px #ffffff45;
+  cursor: pointer;
+}
+
+.bank-resource.is-selectable:hover,
+.bank-resource.is-selectable:focus-visible {
+  border-color: #fff;
+  box-shadow: 0 0 0 2px #ffffff70, 0 0 14px #ffffff24;
+  outline: none;
+}
+
+.bank-resource:disabled {
+  opacity: .52;
+}
+
+.selected-resource-row {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  padding-top: 9px;
+  border-top: 1px solid #ffffff18;
+}
+
+.selected-resource-list {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 7px;
+}
+
+.selected-resource-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 48px;
+  min-height: 38px;
+  padding: 3px 6px;
+  border: 1px solid #ffffff30;
+  border-radius: 4px;
+  color: #ece9df;
+  background: #ffffff0a;
+  cursor: pointer;
+}
+
+.selected-resource-chip .resource-icon {
+  width: 28px;
+  height: 28px;
+}
+
+.selected-resource-chip strong {
+  font: 13px var(--mono);
+}
+
+.take-selected-resources {
+  min-height: 38px;
 }
 
 .game-actions {
@@ -843,52 +914,11 @@ body.is-game-screen .game-board {
   margin-top: 16px;
 }
 
-.action-group {
-  display: grid;
-  gap: 8px;
-  padding-top: 11px;
-  border-top: 1px solid #ffffff12;
-}
-
-.action-group p {
+.game-actions p {
   margin: 0;
-  color: #bcbab0;
-  font-size: 10px;
+  color: #8f8f85;
+  font-size: 9px;
   line-height: 1.4;
-}
-
-.resource-choice-grid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-
-.resource-choice {
-  display: inline-flex;
-  align-items: center;
-  gap: 3px;
-  padding: 3px 5px;
-  border: 1px solid #ffffff14;
-  border-radius: 4px;
-  color: #bdbbb1;
-  background: #ffffff05;
-  font: 9px var(--mono);
-  cursor: pointer;
-}
-
-.resource-choice input {
-  accent-color: var(--gold);
-}
-
-.resource-choice .resource-icon {
-  width: 18px;
-  height: 18px;
-}
-
-.same-resource-choices {
-  display: grid;
-  grid-template-columns: repeat(2,minmax(0,1fr));
-  gap: 5px;
 }
 
 .game-resolution,

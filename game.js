@@ -69,6 +69,8 @@ const presenceListeners = new Map();
 const presenceByUid = new Map();
 let currentPresenceRoom = null;
 let discardSelection = emptyCounts();
+let selectedResourcePicks = [];
+let resourceBankSnapshot = null;
 let inviteAttempted = false;
 
 const cardResourceOrder = ["mercury", "gems", "sulfur", "crystal", "ore"];
@@ -351,7 +353,7 @@ async function updateGame(mutator) {
   const gameRef = roomReference();
   const ownRef = privateReference();
 
-  await runTransaction(db, async (transaction) => {
+  return runTransaction(db, async (transaction) => {
     const [gameSnapshot, privateSnapshot] = await Promise.all([
       transaction.get(gameRef),
       transaction.get(ownRef),
@@ -365,16 +367,21 @@ async function updateGame(mutator) {
     mutator(game, privateState);
     transaction.set(gameRef, game);
     transaction.set(ownRef, privateState);
+    return game;
   });
 }
 
 async function performAction(mutator) {
   try {
     showMessage("");
-    await updateGame((game, privateState) => {
+    const updatedRoom = await updateGame((game, privateState) => {
       if (game.currentTurnUid !== currentUser.uid) throw new Error("Teraz nie jest Twoja tura.");
       mutator(game, privateState);
     });
+    currentRoom = { ...currentRoom, ...updatedRoom };
+    selectedResourcePicks = [];
+    resourceBankSnapshot = null;
+    if (currentRoom?.status === "playing") renderBoard();
   } catch (error) {
     console.error(error);
     showMessage(firebaseErrorMessage(error), "error");
@@ -468,7 +475,7 @@ function renderBoard() {
 
   renderPlayers();
   renderMarket(paused);
-  renderBank();
+  renderBank(paused);
   renderActions(paused);
   renderHeroes(paused);
   renderResolution(paused);
@@ -533,7 +540,7 @@ function renderPlayers() {
     reservations.className = "player-reservations";
     reservationHeading.className = "player-reservations-heading";
     reservationLabel.textContent = "Zarezerwowane";
-    reservationCount.textContent = `${player.reservedCount}/3`;
+    reservationCount.textContent = `(${player.reservedCount}/3)`;
     reservationCards.className = "player-visible-reservations";
     reservationHeading.append(reservationLabel, reservationCount);
 
@@ -570,7 +577,7 @@ function makePlayerCardBadge(card) {
   );
   display.className = "player-card-display";
   points.className = "player-card-points";
-  points.textContent = Number(card.victoryPoints) > 0 ? String(card.victoryPoints) : "";
+  points.textContent = String(card.victoryPoints);
   bonusIcon.classList.add("player-card-bonus-icon");
   bonusIcon.alt = resourceNames[card.bonusResource];
   display.append(points, bonusIcon);
@@ -706,85 +713,123 @@ function makeTableCard(card, source) {
   return article;
 }
 
-function renderBank() {
-  elements["bank-resources"].replaceChildren(...tokenTypes.map((type) => {
-    const item = document.createElement("div");
+function renderBank(paused) {
+  const container = elements["bank-resources"];
+  const enabled = isMyTurn() && !paused && currentRoom.phase === "action";
+  const stacks = tokenTypes.map((type) => {
+    const item = document.createElement("button");
     const icon = makeResourceIcon(type);
     const count = document.createElement("strong");
+    const selectedCount = selectedResourcePicks.filter((resource) => resource === type).length;
+    const selectable = canSelectResource(type, enabled);
+
+    item.type = "button";
     item.className = `bank-resource bank-resource-${type}`;
+    if (selectable) item.classList.add("is-selectable");
+    if (selectedCount) item.classList.add("is-selected");
+    item.disabled = !selectable;
+    item.setAttribute("aria-pressed", String(selectedCount > 0));
+    item.setAttribute("aria-label", `${resourceNames[type]}: ${currentRoom.bank[type]}`);
     icon.alt = resourceNames[type];
     count.textContent = currentRoom.bank[type];
     item.append(icon, count);
+    item.addEventListener("click", () => selectResource(type, paused));
     return item;
-  }));
+  });
+
+  const selectionRow = document.createElement("div");
+  selectionRow.className = "selected-resource-row";
+  selectionRow.hidden = selectedResourcePicks.length === 0;
+  if (selectedResourcePicks.length) {
+    const selection = document.createElement("div");
+    selection.className = "selected-resource-list";
+    for (const type of tokenTypes) {
+      const amount = selectedResourcePicks.filter((resource) => resource === type).length;
+      if (!amount) continue;
+      const chip = document.createElement("button");
+      const icon = makeResourceIcon(type);
+      const count = document.createElement("strong");
+      chip.type = "button";
+      chip.className = "selected-resource-chip";
+      chip.title = `Usuń ${resourceNames[type]} z wyboru`;
+      chip.setAttribute("aria-label", chip.title);
+      icon.alt = resourceNames[type];
+      count.textContent = String(amount);
+      chip.append(icon, count);
+      chip.addEventListener("click", () => removeSelectedResource(type, paused));
+      selection.append(chip);
+    }
+    selectionRow.append(selection);
+
+    if (canTakeSelectedResources()) {
+      const takeButton = makeButton("Weź żetony", "game-button game-button-primary take-selected-resources");
+      takeButton.addEventListener("click", takeSelectedResources);
+      selectionRow.append(takeButton);
+    }
+  }
+
+  container.replaceChildren(...stacks, selectionRow);
 }
 
 function renderActions(paused) {
   const actions = elements["game-actions"];
   actions.replaceChildren();
   if (currentRoom.status !== "playing") return;
+  const hint = document.createElement("p");
+  hint.textContent = paused
+    ? "Wybieranie żetonów jest wstrzymane do powrotu graczy."
+    : "Kliknij podświetlone stosy, aby wybrać żetony.";
+  actions.append(hint);
+}
 
-  const title = document.createElement("h4");
-  title.textContent = "Wybierz jedną akcję";
-  actions.append(title);
+function canSelectResource(type, enabled) {
+  if (!enabled || !resources.includes(type) || currentRoom.bank[type] < 1) return false;
+  const selected = selectedResourcePicks;
 
+  if (!selected.length) return true;
+  if (selected.length === 1) {
+    if (selected[0] === type) return resourceBankSnapshot?.[type] >= 4;
+    return true;
+  }
+  if (selected.length === 2) {
+    const hasPair = selected[0] === selected[1];
+    return !hasPair && !selected.includes(type);
+  }
+  return false;
+}
+
+function canTakeSelectedResources() {
+  if (selectedResourcePicks.length === 2 &&
+    selectedResourcePicks[0] === selectedResourcePicks[1]) return true;
+
+  const selectedKinds = new Set(selectedResourcePicks).size;
+  const availableKinds = availableResourceTypes().length;
+  return selectedKinds > 0 && selectedKinds === Math.min(3, availableKinds);
+}
+
+function selectResource(type, paused) {
   const enabled = isMyTurn() && !paused && currentRoom.phase === "action";
-  const takeGroup = document.createElement("div");
-  takeGroup.className = "action-group";
-  const takeLabel = document.createElement("p");
-  takeLabel.textContent = "Weź 3 różne surowce (lub tyle, ile zostało)";
-  const resourceChoices = document.createElement("div");
-  resourceChoices.className = "resource-choice-grid";
-  const selected = new Set();
-  const requiredKinds = Math.min(3, availableResourceTypes().length);
+  if (!canSelectResource(type, enabled)) return;
+  if (!selectedResourcePicks.length) resourceBankSnapshot = { ...currentRoom.bank };
+  selectedResourcePicks.push(type);
+  renderBank(paused);
+}
 
-  for (const resource of resources) {
-    const label = document.createElement("label");
-    const checkbox = document.createElement("input");
-    const icon = makeResourceIcon(resource);
-    const amount = document.createElement("span");
-    label.className = "resource-choice";
-    checkbox.type = "checkbox";
-    checkbox.disabled = currentRoom.bank[resource] < 1 || !enabled;
-    checkbox.addEventListener("change", () => {
-      if (checkbox.checked && selected.size >= Math.min(3, availableResourceTypes().length)) {
-        checkbox.checked = false;
-        return;
-      }
-      if (checkbox.checked) selected.add(resource);
-      else selected.delete(resource);
-      takeButton.disabled = !enabled || selected.size !== requiredKinds;
-    });
-    icon.alt = "";
-    amount.textContent = currentRoom.bank[resource];
-    label.append(checkbox, icon, amount);
-    resourceChoices.append(label);
+function removeSelectedResource(type, paused) {
+  const index = selectedResourcePicks.lastIndexOf(type);
+  if (index < 0) return;
+  selectedResourcePicks.splice(index, 1);
+  if (!selectedResourcePicks.length) resourceBankSnapshot = null;
+  renderBank(paused);
+}
+
+function takeSelectedResources() {
+  const selection = [...selectedResourcePicks];
+  if (selection.length === 2 && selection[0] === selection[1]) {
+    performAction((game) => takeTwoResources(game, currentUser.uid, selection[0], heroMap));
+    return;
   }
-
-  const takeButton = makeButton("Weź wybrane", "game-button game-button-primary");
-  takeButton.disabled = true;
-  takeButton.addEventListener("click", () => performAction((game) => {
-    takeResources(game, currentUser.uid, [...selected], heroMap);
-  }));
-  takeGroup.append(takeLabel, resourceChoices, takeButton);
-
-  const twoGroup = document.createElement("div");
-  twoGroup.className = "action-group";
-  const twoLabel = document.createElement("p");
-  twoLabel.textContent = "Weź 2 takie same (w puli min. 4)";
-  const twoChoices = document.createElement("div");
-  twoChoices.className = "same-resource-choices";
-  for (const resource of resources) {
-    const button = makeButton(`${resourceNames[resource]} (${currentRoom.bank[resource]})`, "game-button game-button-small");
-    button.disabled = !enabled || currentRoom.bank[resource] < 4;
-    button.addEventListener("click", () => performAction((game) => {
-      takeTwoResources(game, currentUser.uid, resource, heroMap);
-    }));
-    twoChoices.append(button);
-  }
-  twoGroup.append(twoLabel, twoChoices);
-
-  actions.append(takeGroup, twoGroup);
+  performAction((game) => takeResources(game, currentUser.uid, selection, heroMap));
 }
 
 function availableResourceTypes() {
