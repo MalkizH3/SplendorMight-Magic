@@ -339,6 +339,13 @@ body.is-game-screen .game-board {
   gap: 18px;
 }
 
+.game-hero-grid {
+  grid-template-columns: repeat(auto-fill,minmax(min(100%,120px),128px));
+  justify-content: start;
+  gap: 8px;
+  margin-top: 0;
+}
+
 .game-statusbar {
   min-height: 62px;
   padding: 12px 16px;
@@ -537,7 +544,8 @@ body.is-game-screen .game-board {
 
 .market-card-list {
   display: grid;
-  grid-template-columns: repeat(4,minmax(0,1fr));
+  grid-template-columns: repeat(4,minmax(0,120px));
+  justify-content: start;
   align-items: start;
   gap: 8px;
   min-width: 0;
@@ -546,6 +554,7 @@ body.is-game-screen .game-board {
 .market-card {
   position: relative;
   min-width: 0;
+  max-width: 120px;
   overflow: hidden;
   background: #121311;
 }
@@ -900,6 +909,10 @@ body.is-game-screen .game-board {
     grid-template-columns: repeat(2,minmax(0,1fr));
   }
 
+  .market-card {
+    max-width: 112px;
+  }
+
   .auth-panel,
   .lobby-home,
   .lobby-resume {
@@ -944,6 +957,15 @@ body.is-game-screen .game-board {
 
   .market-card-list {
     gap: 5px;
+  }
+
+  .market-card {
+    max-width: 108px;
+  }
+
+  .game-hero-grid {
+    grid-template-columns: repeat(auto-fill,minmax(min(100%,104px),112px));
+    gap: 6px;
   }
 
   .market-card-actions {
