@@ -110,6 +110,17 @@ h1 em {
   letter-spacing: .01em;
 }
 
+.intro-title {
+  line-height: 0;
+}
+
+.intro-logo {
+  display: block;
+  width: min(520px, 100%);
+  height: auto;
+  margin: 0 auto;
+}
+
 .gallery {
   border-top: 1px solid var(--line);
   padding-top: 23px;
