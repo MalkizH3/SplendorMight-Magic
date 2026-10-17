@@ -26,7 +26,9 @@ export function shuffle(items) {
 }
 
 export function createLobby(user) {
-  const member = { uid: user.uid, name: user.displayName || "Gracz" };
+  const name = user.displayName
+    || (user.isAnonymous ? `Tester-${user.uid.slice(-4)}` : "Gracz");
+  const member = { uid: user.uid, name };
 
   return {
     status: "lobby",
@@ -47,6 +49,7 @@ function createPlayer(member) {
     bonuses: emptyCounts(resources),
     points: 0,
     boughtCardIds: [],
+    reservedCardIds: [],
     reservedCount: 0,
     heroIds: [],
   };
@@ -193,7 +196,8 @@ export function reserveCard(game, uid, privateState, cardId, heroMap, tier = nul
   }
 
   privateState.reservedCardIds.push(selectedId);
-  player.reservedCount = privateState.reservedCardIds.length;
+  player.reservedCardIds = [...privateState.reservedCardIds];
+  player.reservedCount = player.reservedCardIds.length;
 
   if (game.bank.gold > 0) {
     game.bank.gold -= 1;
@@ -234,7 +238,8 @@ export function buyCard(game, uid, privateState, cardMap, cardId, source, heroMa
     removeFromMarket(game, id);
   } else {
     privateState.reservedCardIds = privateState.reservedCardIds.filter((reservedId) => reservedId !== id);
-    player.reservedCount = privateState.reservedCardIds.length;
+    player.reservedCardIds = [...privateState.reservedCardIds];
+    player.reservedCount = player.reservedCardIds.length;
   }
 
   finishAction(game, uid, heroMap);
@@ -319,7 +324,7 @@ function advanceTurn(game, uid) {
   const currentIndex = game.turnOrder.indexOf(uid);
   const nextUid = game.turnOrder[(currentIndex + 1) % game.turnOrder.length];
 
-  if (game.triggerUid && nextUid === game.triggerUid) {
+  if (game.triggerUid && nextUid === game.roundStarterUid) {
     finishGame(game);
     return;
   }

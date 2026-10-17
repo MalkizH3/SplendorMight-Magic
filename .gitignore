@@ -1,0 +1,6 @@
+/work/
+/outputs/
+# Lokalne logi emulatorow Firebase
+/firebase-debug.log
+/firestore-debug.log
+/database-debug.log

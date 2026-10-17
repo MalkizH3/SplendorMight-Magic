@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#171817" />
+  <meta name="description" content="Interaktywna instrukcja Splendor Might & Magic. Przygotuj stół, wypróbuj ruchy i poznaj zasady zakupu kart oraz wizyt bohaterów." />
+  <base href="../" />
+  <title>Instrukcja — Splendor Might &amp; Magic</title>
+  <link rel="stylesheet" href="card-layers.css" />
+  <link rel="stylesheet" href="instrukcja/instrukcja.css" />
+  <script type="module" src="instrukcja/instrukcja.js"></script>
+</head>
+<body>
+  <main>
+    <header class="cover">
+      <p class="eyebrow">KSIĘGA ZASAD · 2–4 GRACZY</p>
+      <img class="logo" src="sprites/logoSplendor.png" alt="Splendor Might & Magic" width="800" height="360" />
+      <h1 class="title-frame">Instrukcja</h1>
+      <p class="cover-copy">Wciel się we władcę Erathii. Inwestuj w kopalnie, gromadź bogactwa i przyciągaj bohaterów do swojego królestwa.</p>
+      <div class="cover-stats"><span><b>15</b> punktów do finału</span><i aria-hidden="true">✥</i><span><b>1</b> akcja na turę</span><i aria-hidden="true">✥</i><span><b>10</b> znaczników w ręce</span></div>
+      <p class="hint">Przewijaj księgę i wypróbuj zasady w oznaczonych przykładach.</p>
+    </header>
+
+    <section class="panel" aria-labelledby="contents-title">
+      <div class="section-heading"><span class="chapter">I</span><h2 id="contents-title">Zawartość i przygotowanie</h2></div>
+      <p class="lead">Zanim rozpocznie się rywalizacja, przygotuj wspólny rynek kart, bohaterów i bank surowców.</p>
+      <div class="inventory"><div><strong>40</strong><span>znaczników surowców i złota</span></div><div><strong>90</strong><span>kart kopalni · 40 / 30 / 20</span></div><div><strong>10</strong><span>płytek bohaterów</span></div></div>
+      <div class="ornament" aria-hidden="true">✥</div>
+      <h3>Ilu władców zasiada do stołu?</h3>
+      <div class="segmented" id="players" role="group" aria-label="Liczba graczy"><button type="button" data-players="2" aria-pressed="false">2 graczy</button><button type="button" data-players="3" aria-pressed="false">3 graczy</button><button type="button" data-players="4" aria-pressed="true">4 graczy</button></div>
+      <div id="setup-resources" class="resource-bank" aria-live="polite"></div>
+      <p class="callout" id="setup-summary" aria-live="polite"></p>
+      <div class="two-col setup-layout"><ol class="steps"><li><b>Podziel i potasuj karty.</b> Trzy osobne talie odpowiadają poziomom I, II i III. Najniższy poziom połóż na dole stołu.</li><li><b>Odkryj rynek.</b> Wyłóż po 4 karty z każdego poziomu. Obok każdego rzędu zostaw jego zakrytą talię.</li><li><b>Wylosuj bohaterów.</b> Odkryj tyle płytek, ilu jest graczy, plus jedną. Pozostałe odłóż do pudełka.</li><li><b>Utwórz bank.</b> Rozdziel znaczniki na 6 stosów, wspólnych dla wszystkich graczy. Liczby dla wybranego wariantu widzisz powyżej.</li></ol><div class="market-preview" aria-label="Schemat rynku: trzy rzędy po cztery odkryte karty"><div id="setup-heroes" class="setup-heroes"></div><div id="market-rows"></div><p class="caption">Wspólny rynek · po 4 odkryte karty na poziom</p></div></div>
+    </section>
+
+    <section class="panel" aria-labelledby="turn-title">
+      <div class="section-heading"><span class="chapter">II</span><h2 id="turn-title">Twoja tura</h2></div>
+      <p class="lead">Zaczyna najmłodszy gracz. Dalej rozgrywka toczy się zgodnie z ruchem wskazówek zegara. W swojej turze wybierz <strong>dokładnie jedną</strong> z czterech akcji.</p>
+      <div class="action-tabs" role="tablist" aria-label="Cztery możliwe akcje">
+        <button type="button" id="tab-three" role="tab" aria-selected="true" aria-controls="action-three" tabindex="0" data-action="three"><span>01</span>3 różne surowce</button>
+        <button type="button" id="tab-two" role="tab" aria-selected="false" aria-controls="action-two" tabindex="-1" data-action="two"><span>02</span>2 takie same</button>
+        <button type="button" id="tab-reserve" role="tab" aria-selected="false" aria-controls="action-reserve" tabindex="-1" data-action="reserve"><span>03</span>Rezerwacja</button>
+        <button type="button" id="tab-buy" role="tab" aria-selected="false" aria-controls="action-buy" tabindex="-1" data-action="buy"><span>04</span>Zakup karty</button>
+      </div>
+      <div id="action-three" class="action-content" role="tabpanel" aria-labelledby="tab-three">
+        <h3>Weź po jednym znaczniku trzech różnych kolorów</h3><p>Wybierz trzy różne surowce z banku. Złoto zdobywasz przez rezerwację — nie dobierasz go w tej akcji.</p>
+        <p class="example-label">WYPRÓBUJ · wybierz trzy kolory</p><div id="take-resources" class="take-resources"></div><p id="take-result" class="result" aria-live="polite">Wybrano 0 z 3 kolorów.</p><button type="button" class="quiet" id="reset-take">Wyczyść wybór</button>
+        <p class="small">Jeśli bank nie ma trzech dostępnych kolorów, weź tyle różnych surowców, ile jest dostępnych.</p>
+      </div>
+      <div id="action-two" class="action-content" role="tabpanel" aria-labelledby="tab-two" hidden>
+        <h3>Weź dwa znaczniki tego samego koloru</h3><p>Możesz to zrobić wyłącznie wtedy, gdy <strong>przed doborem</strong> w stosie leżą co najmniej 4 znaczniki. Ta akcja nie dotyczy złota.</p>
+        <div class="two-demo"><img src="sprites/resource/crystal.png" alt="Kryształ" /><label for="bank-count">Kryształy w banku przed ruchem <output id="bank-value">4</output><input id="bank-count" type="range" min="0" max="7" value="4" /></label></div><p id="double-result" class="result" aria-live="polite"></p>
+      </div>
+      <div id="action-reserve" class="action-content" role="tabpanel" aria-labelledby="tab-reserve" hidden>
+        <h3>Zarezerwuj kartę i weź złoto</h3><p>Weź do ręki jedną odkrytą kartę z rynku lub w ciemno wierzchnią kartę dowolnej talii. Karty z talii nie pokazujesz innym. Otrzymujesz też 1 złoto, jeśli jest w banku.</p>
+        <div class="reserve-controls"><label for="reserved-count">Karty już na ręce <select id="reserved-count"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option></select></label><label class="check"><input type="checkbox" id="gold-available" checked /> Złoto jest w banku</label></div><p id="reserve-result" class="result" aria-live="polite"></p>
+        <p class="callout">Limit to 3 zarezerwowane karty. Nie wolno ich odrzucać — miejsce zwalniasz, kupując jedną z nich. Rezerwacja jest jedyną drogą zdobycia złotego dżokera.</p>
+      </div>
+      <div id="action-buy" class="action-content" role="tabpanel" aria-labelledby="tab-buy" hidden>
+        <h3>Kup odkrytą lub zarezerwowaną kartę</h3><p>Zapłać jej koszt znacznikami, pomniejszając go o bonusy posiadanych kart. Złoto zastępuje brakujący surowiec dowolnego koloru. Wydane znaczniki wracają do banku.</p><p>Dołóż kupioną kartę do swojego królestwa. Układaj karty w kolumnach według bonusów tak, aby punkty i symbole pozostały widoczne.</p><p class="callout">Po zakupie lub rezerwacji karty z rynku natychmiast uzupełnij puste miejsce kartą z tej samej talii. Jeśli talia się skończy, miejsce zostaje puste.</p><p class="hint">Niżej znajdziesz interaktywny przykład płatności.</p>
+      </div>
+      <div class="ornament" aria-hidden="true">✥</div>
+      <div class="end-turn"><span class="seal">10</span><div><h3>Na koniec tury: policz znaczniki</h3><p>Możesz mieć najwyżej <b>10 znaczników łącznie ze złotem</b>. Nadmiar zwróć do banku. Możesz oddać również znaczniki, które właśnie dobrałeś; wszystkie twoje znaczniki są widoczne dla innych.</p></div></div>
+    </section>
+
+    <section class="panel" aria-labelledby="purchase-title">
+      <div class="section-heading"><span class="chapter">III</span><h2 id="purchase-title">Kopalnie budują królestwo</h2></div>
+      <p class="lead">Karta daje stały bonus surowca i może dawać punkty doświadczenia. Bonus działa przy każdym kolejnym zakupie — nie zużywasz go i nie zamieniasz na znacznik.</p>
+      <div class="two-col card-lesson"><div class="sample-card"><div id="purchase-card"></div><p class="caption">Przykładowa karta kopalni</p></div><div><h3>Jak czytać kartę?</h3><dl class="anatomy"><dt>Punkty · lewy górny róg</dt><dd>Dodaj je do wyniku. Brak liczby oznacza 0 punktów.</dd><dt>Bonus · prawy górny róg</dt><dd>Każda taka karta obniża przyszłe koszty tego surowca o 1.</dd><dt>Koszt · lewy dolny róg</dt><dd>Liczby przy surowcach mówią, ile trzeba zapłacić przed odliczeniem bonusów.</dd></dl></div></div>
+      <div class="ornament" aria-hidden="true">✥</div>
+      <h3>Sprawdź, ile zapłacisz</h3><p>Przykład z instrukcji: karta kosztuje <b>1 rtęć, 4 klejnoty i 2 siarki</b>, daje 2 punkty i bonus kryształu. Zmień liczbę swoich bonusów i znaczników. Kalkulator używa złota tylko do pokrycia braków.</p>
+      <div class="calculator-scroll"><div class="calculator" id="calculator"></div></div><label class="gold-control" for="gold-count"><img src="sprites/resource/gold.png" alt="" /> Twoje złoto <input type="number" id="gold-count" min="0" max="10" value="0" /></label>
+      <div id="payment-result" class="result payment-result" aria-live="polite"></div><button type="button" class="quiet" id="reset-payment">Przywróć przykład</button>
+      <p class="small">Bonus obniża wyłącznie koszt swojego koloru, maksymalnie do zera. Przy wystarczających bonusach karta może być darmowa — jej zakup nadal jest twoją akcją w turze.</p>
+    </section>
+
+    <section class="panel" aria-labelledby="heroes-title">
+      <div class="section-heading"><span class="chapter">IV</span><h2 id="heroes-title">Wizyta bohatera</h2></div>
+      <p class="lead">Na koniec tury sprawdź swoje bonusy. Jeśli spełniasz wymagania odkrytego bohatera, przybywa do twojego królestwa i daje <strong>3 punkty</strong>.</p>
+      <div class="two-col hero-lesson"><div class="hero-portrait" id="styg-tile"></div><div><h3>Zaproszenie dla Styga</h3><p>Przykład z instrukcji: potrzebujesz 3 bonusów siarki, 3 klejnotów i 3 rtęci. Znaczniki i złoto nie liczą się do wymagań bohatera.</p><div id="hero-bonuses" class="hero-bonuses"></div><p id="hero-result" class="result" aria-live="polite"></p></div></div>
+      <div class="rule-grid"><div><h3>To nie jest akcja</h3><p>Wizyta następuje po twojej akcji. Nie wydajesz kart ani znaczników.</p></div><div><h3>Jeden bohater na turę</h3><p>Jeśli spełniasz wymagania kilku, wybierasz jednego. Nie możesz odmówić wizyty.</p></div><div><h3>Bonusy zostają z tobą</h3><p>Po zabraniu płytki zachowujesz wszystkie swoje karty. Połóż bohatera odkrytego przed sobą.</p></div></div>
+    </section>
+
+    <section class="panel finale" aria-labelledby="end-title">
+      <div class="section-heading"><span class="chapter">V</span><h2 id="end-title">Koniec gry</h2></div>
+      <div class="victory-mark">15<span>punktów doświadczenia</span></div>
+      <p class="lead">Gdy ktoś osiągnie 15 punktów, <strong>dokończcie bieżącą rundę</strong>, aby każdy rozegrał tyle samo tur. Do wyniku wliczają się punkty z kopalni i bohaterów.</p>
+      <div class="rule-grid"><div><h3>Najwięcej punktów</h3><p>Wygrywa gracz z najwyższym wynikiem po zakończeniu rundy, nawet jeśli to ktoś inny jako pierwszy zdobył 15 punktów.</p></div><div><h3>Remis?</h3><p>Spośród remisujących wygrywa osoba z mniejszą liczbą kupionych kart kopalni.</p></div></div>
+    </section>
+
+    <section class="panel questions" aria-labelledby="questions-title"><div class="section-heading"><span class="chapter">✥</span><h2 id="questions-title">Zanim wykonasz ruch</h2></div>
+      <details><summary>Czy mogę wziąć złoto zamiast zwykłego surowca?</summary><p>Nie. Złoto otrzymujesz wyłącznie podczas rezerwacji karty i tylko wtedy, gdy złoto jest dostępne w banku. Podczas płatności zastępuje dowolny surowiec.</p></details>
+      <details><summary>Czy mogę zarezerwować kartę bez złota w banku?</summary><p>Tak, o ile masz mniej niż 3 zarezerwowane karty. Brak złota nie blokuje rezerwacji — po prostu nie otrzymujesz znacznika.</p></details>
+      <details><summary>Czy mogę kupić i zarezerwować kartę w tej samej turze?</summary><p>Nie. Wybierasz jedną akcję. Zakup zarezerwowanej karty także zajmuje całą akcję.</p></details>
+      <details><summary>Czy bonusy i znaczniki to to samo?</summary><p>Nie. Bonusy pochodzą z kupionych kart i są stałe. Znaczniki wydajesz na zakupy i oddajesz do banku. Wymagania bohaterów spełniają tylko bonusy.</p></details>
+      <details><summary>Czy mogę dobrać dwa znaczniki, gdy w stosie zostały trzy?</summary><p>Nie. Aby wziąć dwa znaczniki tego samego koloru, przed ruchem w stosie muszą leżeć co najmniej cztery.</p></details>
+    </section>
+    <footer><span aria-hidden="true">✥</span><p>Splendor Might &amp; Magic</p><p>Autor gry: Marc André · Reskin: Malkiz · Wydanie Malkiz</p><p class="small">Na podstawie dostarczonej instrukcji. Grafiki z Heroes of Might and Magic III i Horn of the Abyss. Prawa do oryginalnej gry należą do Ubisoft.</p></footer>
+  </main>
+</body>
+</html>
+

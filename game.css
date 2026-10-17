@@ -23,10 +23,17 @@
 .game-section {
   margin: 0 0 64px;
   padding: 24px;
-  border: 1px solid #ffffff18;
-  border-radius: 8px;
-  background: linear-gradient(145deg, #22231f, #191a18 70%);
-  box-shadow: 0 22px 60px #0003;
+  border: 1px solid #ffffff30;
+  border-radius: 12px;
+  background: rgb(23 24 23 / 62%);
+  box-shadow: 0 22px 60px #0005;
+}
+
+body.is-game-screen {
+  background-image:
+    linear-gradient(rgb(0 0 0 / 42%), rgb(0 0 0 / 42%)),
+    radial-gradient(ellipse at 50% -35%,#34332940 0%,transparent 55%),
+    url("assets/fantasy-cavern-background.png");
 }
 
 body.is-game-screen .intro,
@@ -162,9 +169,9 @@ body.is-game-screen .game-board {
 }
 
 .game-panel {
-  border: 1px solid #ffffff15;
-  border-radius: 6px;
-  background: #1718179c;
+  border: 1px solid #ffffff20;
+  border-radius: 8px;
+  background: rgb(23 24 23 / 52%);
 }
 
 .auth-panel,
@@ -207,6 +214,11 @@ body.is-game-screen .game-board {
   color: #a8a79e;
   font-size: 12px;
   line-height: 1.55;
+}
+
+.local-test-note {
+  color: #e5cf88 !important;
+  font-weight: 600;
 }
 
 .game-profile {
@@ -433,7 +445,7 @@ body.is-game-screen .game-board {
 .player-score {
   flex: 0 0 auto;
   color: var(--gold);
-  font: 10px var(--mono);
+  font: 15px var(--mono);
 }
 
 .player-bonuses {
@@ -476,20 +488,20 @@ body.is-game-screen .game-board {
   margin-top: 13px;
 }
 
-.player-tokens::before,
-.player-bonuses::before,
-.player-visible-cards::before,
-.player-visible-heroes::before {
+.player-section-heading {
   flex: 0 0 100%;
+  display: flex;
+  align-items: center;
+  gap: 5px;
   color: #8f8f85;
   font: 10px var(--mono);
   letter-spacing: .04em;
 }
 
-.player-tokens::before { content: "Żetony"; }
-.player-bonuses::before { content: "Bonusy"; }
-.player-visible-cards::before { content: "Kupione karty"; }
-.player-visible-heroes::before { content: "Bohaterowie"; }
+.player-section-heading strong {
+  color: var(--gold);
+  font: inherit;
+}
 
 .player-token {
   display: inline-flex;
@@ -582,20 +594,6 @@ body.is-game-screen .game-board {
   margin-top: 10px;
 }
 
-.player-reservations-heading {
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  gap: 5px;
-  color: #bcbab0;
-  font: 11px var(--mono);
-}
-
-.player-reservations-heading strong {
-  color: #c7a566;
-  font: 11px var(--mono);
-}
-
 .player-visible-reservations {
   display: flex;
   flex-wrap: wrap;
@@ -604,12 +602,24 @@ body.is-game-screen .game-board {
   margin-top: 5px;
 }
 
-.player-visible-heroes span {
-  padding: 2px 5px;
+.player-hero-badge {
+  cursor: zoom-in;
+}
+
+.player-hero-hover-preview {
+  width: 100%;
+  border: 1px solid #c7a56699;
   border-radius: 3px;
-  color: #d8c397;
-  background: #c7a56617;
-  font-size: 9px;
+  box-shadow: 0 12px 36px #000c;
+  pointer-events: none;
+}
+
+.player-hero-avatar {
+  display: block;
+  width: 38px;
+  height: 38px;
+  border-radius: 3px;
+  object-fit: cover;
 }
 
 .board-layout {
@@ -974,6 +984,26 @@ body.is-game-screen .game-board {
   box-shadow: 0 24px 80px #000c;
 }
 
+.room-closure-dialog[open] {
+  display: block;
+  box-sizing: border-box;
+  width: min(440px, calc(100vw - 28px));
+  max-width: none;
+  margin: auto;
+  color: #e4e1d7;
+  background: #1b1c19;
+  box-shadow: 0 24px 80px #000c;
+}
+
+.room-closure-dialog::backdrop {
+  background: #05060599;
+}
+
+.room-closure-dialog > .game-button {
+  display: flex;
+  margin: 18px 0 0 auto;
+}
+
 .discard-dialog::backdrop {
   background: #05060599;
 }
@@ -1078,7 +1108,7 @@ body.is-game-screen .game-board {
   font: 11px var(--mono);
 }
 
-@media (max-width: 1100px) {
+@media (max-width: 1200px) {
   .board-layout {
     grid-template-columns: 1fr;
   }
@@ -1102,10 +1132,14 @@ body.is-game-screen .game-board {
     grid-template-columns: 1fr;
   }
 
-  .players-panel,
+  .players-panel {
+    grid-column: 1;
+    grid-row: 2;
+  }
+
   .bank-panel {
     grid-column: 1;
-    grid-row: auto;
+    grid-row: 1;
   }
 
   .market-card-list {
@@ -1119,6 +1153,7 @@ body.is-game-screen .game-board {
     --market-card-width: 221px;
   }
 
+  .game-hero-grid[data-count="3"] .hero-tile,
   .game-hero-grid[data-count="4"] .hero-tile,
   .game-hero-grid[data-count="5"] .hero-tile {
     flex-basis: calc((100% - 6px) / 2);
@@ -1216,4 +1251,99 @@ body.is-game-screen .game-board {
     opacity: 1;
     visibility: visible;
   }
+}
+
+/* Viewport overlay for the card-to-badge morph. */
+.card-flight {
+  position: fixed;
+  z-index: 10000;
+  overflow: hidden;
+  pointer-events: none;
+  background: #10110f;
+  border: 1px solid #c7a56699;
+  box-sizing: border-box;
+  box-shadow: 0 12px 32px #0009, 0 0 18px #c7a56640;
+  will-change: transform, width, height;
+}
+.card-flight-front,
+.card-flight-final {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.card-flight-front > .market-card-art {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+}
+.card-flight-front > .player-card-display,
+.card-flight-final > .player-card-display {
+  flex: 0 0 auto;
+}
+
+
+.card-flight-front > .hero-tile {
+  flex: 0 0 100%;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+}
+
+.card-flight .hero-tile-action {
+  display: none;
+}
+
+
+.game-player-card.is-winner {
+  position: relative;
+  border-color: #edcb79;
+  background: linear-gradient(135deg, #342b18, #191a15 70%);
+  box-shadow: inset 0 0 0 1px #edcb7933, 0 0 22px #e9c46a33;
+}
+
+.player-winner-identity {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+}
+
+.player-winner-badge {
+  flex: 0 0 auto;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 9px;
+  border: 1px solid #edcb7966;
+  border-radius: 4px;
+  color: #ffe3a0;
+  background: #e9c46a1c;
+  font: 600 12px var(--serif);
+}
+
+.victory-confetti {
+  position: fixed;
+  inset: 0;
+  z-index: 11000;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.victory-confetti-piece {
+  position: absolute;
+  top: 0;
+  display: block;
+  will-change: transform, opacity;
+}
+
+
+/* Clip the complete artwork, including overlays, to softly rounded corners. */
+.market-card,
+.player-card-hover-preview,
+.player-hero-hover-preview,
+.table-card-art {
+  border-radius: 6px;
 }

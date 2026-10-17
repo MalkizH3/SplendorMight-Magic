@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="pl">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#171817" />
+    <meta name="description" content="Galeria kart i kafelków bohaterów Splendor Might & Magic." />
+    <base href="../" />
+    <title>Galeria — Splendor Might &amp; Magic</title>
+    <link rel="stylesheet" href="styles.css?v=gallery-route-2" />
+    <link rel="stylesheet" href="card-layers.css" />
+  </head>
+  <body class="gallery-page">
+    <header class="topbar">
+      <a class="brand" href="./" aria-label="Splendor Might & Magic — strona główna">
+        <span class="brand-mark" aria-hidden="true">✦</span>
+        <span>Splendor <span class="brand-amp">×</span> Heroes of Might &amp; Magic</span>
+      </a>
+      <nav class="topbar-nav" aria-label="Nawigacja główna">
+        <a href="./#game-section">Gra online</a>
+        <a href="galeria/" aria-current="page">Galeria</a>
+        <a href="instrukcja/" target="_blank" rel="noopener noreferrer">Instrukcja<span class="sr-only"> (otwiera się w nowej karcie)</span></a>
+      </nav>
+    </header>
+
+    <main>
+      <section id="gallery-section" class="gallery" aria-label="Galeria kart">
+        <div class="gallery-toolbar">
+          <div class="gallery-heading">
+            <h2>Przykładowe karty</h2>
+            <span class="count" id="sprite-count">0</span>
+          </div>
+          <label class="search-wrap">
+            <span class="search-icon" aria-hidden="true">⌕</span>
+            <span class="sr-only">Szukaj kart</span>
+            <input id="search" type="search" placeholder="Szukaj w galerii…" autocomplete="off" />
+            <kbd>/</kbd>
+          </label>
+        </div>
+        <div class="filter-row" id="filters" aria-label="Filtruj kategorię"></div>
+        <div class="sprite-grid" id="sprite-grid" aria-live="polite"></div>
+      </section>
+
+      <section class="hero-gallery" aria-labelledby="heroes-title">
+        <div class="gallery-toolbar">
+          <div class="gallery-heading">
+            <h2 id="heroes-title">Kafelki bohaterów</h2>
+            <span class="count" id="hero-count">00</span>
+          </div>
+        </div>
+        <div class="hero-grid" id="hero-grid" aria-live="polite"></div>
+      </section>
+    </main>
+
+    <footer>
+      <span class="footer-star">✦</span>
+      Splendor Might &amp; Magic
+      <span class="footer-sep">·</span>
+      GALERIA KART I BOHATERÓW
+    </footer>
+
+    <dialog id="preview" class="preview" aria-label="Podgląd karty">
+      <button class="preview-close" id="preview-close" type="button" aria-label="Zamknij podgląd">×</button>
+      <div class="preview-image-wrap">
+        <div class="sprite-art preview-card-art">
+          <img id="preview-image" alt="" />
+          <svg class="card-overlay" viewBox="0 0 1504 2080" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Punkty zwycięstwa i bonusowy surowiec">
+            <rect width="1504" height="416" fill="white" fill-opacity="0.7" />
+            <image id="preview-bonus-resource" x="1070" y="28" width="360" height="360" preserveAspectRatio="xMidYMid meet" />
+            <text class="card-overlay-points" id="preview-points" x="180" y="190" text-anchor="middle" dominant-baseline="central" font-size="400"></text>
+            <g id="preview-card-costs"></g>
+          </svg>
+        </div>
+      </div>
+      <div class="preview-actions">
+        <button class="preview-download" id="preview-download" type="button">Pobierz jako PNG</button>
+        <span class="sr-only" id="download-status" aria-live="polite"></span>
+      </div>
+    </dialog>
+
+    <script type="module" src="app.js?v=gallery-route-1"></script>
+  </body>
+</html>

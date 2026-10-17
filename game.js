@@ -1,5 +1,6 @@
 import {
   auth,
+  authInitialization,
   collection,
   db,
   doc,
@@ -20,6 +21,8 @@ import {
   GoogleAuthProvider,
   firebaseReady,
   firebasePresenceReady,
+  localTestMode,
+  signInAnonymously,
 } from "./firebase-client.js";
 import {
   buyCard,
@@ -37,20 +40,22 @@ import {
   takeResources,
   takeTwoResources,
   tokenTypes,
-} from "./game-engine.js";
+} from "./game-engine.js?v=public-reservations-2";
 import { createCardArtwork } from "./card-view.js";
 import { createHeroTile } from "./hero-view.js";
 
 const elements = Object.fromEntries([
   "game-connection", "game-message", "game-section", "game-back-button",
-  "auth-panel", "sign-in-button", "sign-out-button",
+  "auth-panel", "auth-description", "local-test-note", "sign-in-button",
+  "anonymous-sign-in-button", "sign-out-button",
   "game-profile", "profile-name", "lobby-panel", "lobby-home", "lobby-resume",
   "return-to-game-button", "leave-game-button", "create-room-button",
   "room-lobby", "lobby-player-count", "lobby-player-list", "invite-link",
   "copy-invite-button", "leave-room-button", "start-game-button", "lobby-hint",
   "game-board", "turn-label", "turn-status", "round-status", "game-players",
   "market-tiers", "bank-resources", "game-actions", "game-heroes",
-  "game-resolution", "discard-dialog", "game-finished",
+  "game-resolution", "discard-dialog", "room-closure-dialog",
+  "room-closure-message", "room-closure-dismiss", "game-finished",
 ].map((id) => [id, document.getElementById(id)]));
 
 let cards = [];
@@ -126,6 +131,28 @@ function watchRoom(roomId) {
   stopRoomSubscriptions();
   currentRoomId = roomId;
   setRoomUrl(roomId);
+  let roomClosureHandled = false;
+
+  const handleRoomClosure = (closure) => {
+    if (roomClosureHandled) return;
+    roomClosureHandled = true;
+    stopRoomSubscriptions();
+    currentRoom = null;
+    leaveRoomView();
+
+    if (closure?.closedByUid && closure.closedByUid !== currentUser?.uid) {
+      const closureMessage =
+        `Zakończono: gracz ${closure.closedByName || "Gracz"} opuścił grę.`;
+      elements["room-closure-message"].textContent = closureMessage;
+      showMessage(closureMessage);
+      elements["room-closure-dialog"].showModal();
+    } else if (closure?.closedByUid === currentUser?.uid) {
+      showMessage("Partia została zamknięta i usunięta dla wszystkich graczy.");
+    } else {
+      showMessage("Partia została zamknięta.");
+    }
+  };
+
   stopRoomListener = onSnapshot(roomReference(roomId), async (snapshot) => {
     if (!snapshot.exists()) {
       let closure = null;
@@ -136,24 +163,32 @@ function watchRoom(roomId) {
         console.error(error);
       }
       if (currentRoomId !== roomId) return;
-
-      currentRoom = null;
-      leaveRoomView();
-      if (closure?.closedByUid && closure.closedByUid !== currentUser?.uid) {
-        window.alert(`Zakończono: gracz ${closure.closedByName || "Gracz"} opuścił grę.`);
-      } else if (closure?.closedByUid === currentUser?.uid) {
-        showMessage("Partia została zamknięta i usunięta dla wszystkich graczy.");
-      } else {
-        showMessage("Partia została zamknięta.");
-      }
+      handleRoomClosure(closure);
       return;
     }
 
     currentRoom = { id: snapshot.id, ...snapshot.data() };
     syncPresenceWatchers();
     renderGame();
-  }, (error) => {
+    publishLegacyReservations(roomId).catch(console.error);
+  }, async (error) => {
     console.error(error);
+
+    // Firestore rules may report permission-denied instead of an empty snapshot
+    // after another member atomically deletes the room and writes its closure.
+    let closure = null;
+    try {
+      const closureSnapshot = await getDoc(doc(db, "roomClosures", roomId));
+      if (closureSnapshot.exists()) closure = closureSnapshot.data();
+    } catch (closureError) {
+      console.error(closureError);
+    }
+    if (currentRoomId !== roomId) return;
+    if (closure?.closedByUid) {
+      handleRoomClosure(closure);
+      return;
+    }
+
     showMessage("Nie udało się połączyć z pokojem. Odśwież stronę i spróbuj ponownie.", "error");
   });
 
@@ -162,8 +197,23 @@ function watchRoom(roomId) {
       ? snapshot.data()
       : { reservedCardIds: [] };
     renderGame();
-  }, (error) => {
+    publishLegacyReservations(roomId, true).catch(console.error);
+  }, async (error) => {
     console.error(error);
+
+    let closure = null;
+    try {
+      const closureSnapshot = await getDoc(doc(db, "roomClosures", roomId));
+      if (closureSnapshot.exists()) closure = closureSnapshot.data();
+    } catch (closureError) {
+      console.error(closureError);
+    }
+    if (currentRoomId !== roomId || roomClosureHandled) return;
+    if (closure?.closedByUid) {
+      handleRoomClosure(closure);
+      return;
+    }
+
     showMessage("Nie można odczytać Twoich zarezerwowanych kart.", "error");
   });
 
@@ -261,7 +311,14 @@ function setSignedIn(user) {
   elements["auth-panel"].classList.toggle("is-signed-in", Boolean(user));
   elements["game-profile"].hidden = !user;
   elements["sign-in-button"].hidden = Boolean(user);
-  elements["profile-name"].textContent = user?.displayName || user?.email || "Gracz";
+  elements["profile-name"].textContent = getPlayerName(user);
+}
+
+function getPlayerName(user) {
+  if (!user) return "Gracz";
+  if (user.displayName) return user.displayName;
+  if (user.isAnonymous) return `Tester-${user.uid.slice(-4)}`;
+  return user.email || "Gracz";
 }
 
 async function createRoom() {
@@ -308,7 +365,7 @@ async function joinRoom(roomId) {
 
         const member = {
           uid: currentUser.uid,
-          name: currentUser.displayName || "Gracz",
+          name: getPlayerName(currentUser),
         };
         room.members.push(member);
         room.memberUids.push(member.uid);
@@ -319,6 +376,7 @@ async function joinRoom(roomId) {
           bonuses: emptyCounts(resources),
           points: 0,
           boughtCardIds: [],
+          reservedCardIds: [],
           reservedCount: 0,
           heroIds: [],
         });
@@ -363,6 +421,32 @@ async function startGame() {
   }
 }
 
+// Repair missing or stale public reservations using the owner's saved cards.
+async function publishLegacyReservations(roomId, verifySavedCards = false) {
+  const uid = currentUser?.uid;
+  const player = currentRoom?.players.find((entry) => entry.uid === uid);
+  if (!uid || !player) return;
+  if (!verifySavedCards && Array.isArray(player.reservedCardIds) &&
+      player.reservedCardIds.length === player.reservedCount) return;
+  const gameRef = roomReference(roomId);
+  const ownRef = privateReference(roomId, uid);
+  await runTransaction(db, async (transaction) => {
+    const [roomSnapshot, privateSnapshot] = await Promise.all([
+      transaction.get(gameRef), transaction.get(ownRef),
+    ]);
+    if (!roomSnapshot.exists()) return;
+    const game = roomSnapshot.data();
+    const owner = game.players.find((entry) => entry.uid === uid);
+    if (!owner || !privateSnapshot.exists()) return;
+    const savedIds = privateSnapshot.data().reservedCardIds || [];
+    if (JSON.stringify(owner.reservedCardIds) === JSON.stringify(savedIds) &&
+        owner.reservedCount === savedIds.length) return;
+    owner.reservedCardIds = [...savedIds];
+    owner.reservedCount = savedIds.length;
+    transaction.set(gameRef, game);
+  });
+}
+
 async function updateGame(mutator) {
   if (!currentRoomId || !currentUser) throw new Error("Zaloguj się, aby wykonać ruch.");
   if (!everyoneIsOnline()) throw new Error("Gra czeka na połączenie wszystkich uczestników.");
@@ -381,6 +465,11 @@ async function updateGame(mutator) {
       ? privateSnapshot.data()
       : { reservedCardIds: [] };
     mutator(game, privateState);
+    const owner = game.players.find((entry) => entry.uid === currentUser.uid);
+    if (owner) {
+      owner.reservedCardIds = [...privateState.reservedCardIds];
+      owner.reservedCount = owner.reservedCardIds.length;
+    }
     transaction.set(gameRef, game);
     transaction.set(ownRef, privateState);
     return game;
@@ -470,6 +559,83 @@ function renderLobby() {
   updateConnectionLabel();
 }
 
+// Keep source geometry briefly: public and private reservation snapshots can arrive separately.
+const cardFlightSources = new Map();
+let cardFlightRoomId = null;
+let cardFlightPlayers = null;
+
+function captureCardFlights() {
+  if (cardFlightRoomId !== currentRoomId) {
+    cardFlightSources.clear();
+    cardFlightPlayers = null;
+    cardFlightRoomId = currentRoomId;
+  }
+  const now = performance.now();
+  for (const [key, source] of cardFlightSources) {
+    if (now - source.time > 5000) cardFlightSources.delete(key);
+  }
+  document.querySelectorAll("[data-flight-card]").forEach((node) => {
+    const visual = node.matches(".hero-tile")
+      ? node : node.querySelector(".market-card-art, .player-card-display");
+    if (!visual) return;
+    const rect = node.classList.contains("market-card")
+      ? visual.getBoundingClientRect() : node.getBoundingClientRect();
+    if (!rect.width || !rect.height) return;
+    const owner = node.closest("[data-player-uid]")?.dataset.playerUid || "market";
+    cardFlightSources.set(`${owner}:${node.dataset.flightCard}`, {
+      rect, visual: visual.cloneNode(true), time: now,
+    });
+  });
+  const previous = cardFlightPlayers;
+  cardFlightPlayers = new Set(Array.from(
+    elements["game-players"].querySelectorAll("[data-flight-card]"),
+    (node) => `${node.closest("[data-player-uid]").dataset.playerUid}:${node.dataset.flightZone}:${node.dataset.flightCard}`,
+  ));
+  return previous !== null ? cardFlightPlayers : null;
+}
+
+function animateCardFlights(previous) {
+  if (!previous || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  elements["game-players"].querySelectorAll("[data-flight-card]").forEach((target) => {
+    const uid = target.closest("[data-player-uid]").dataset.playerUid;
+    const id = target.dataset.flightCard;
+    if (previous.has(`${uid}:${target.dataset.flightZone}:${id}`)) return;
+    const source = cardFlightSources.get(`${uid}:${id}`) || cardFlightSources.get(`market:${id}`);
+    if (!source) return;
+    const end = target.getBoundingClientRect();
+    if (!end.width || !end.height) return;
+    const start = source.rect;
+    const flight = document.createElement("div");
+    flight.className = "card-flight";
+    flight.setAttribute("aria-hidden", "true");
+    Object.assign(flight.style, {
+      left: `${start.left}px`, top: `${start.top}px`,
+      width: `${start.width}px`, height: `${start.height}px`,
+    });
+    const front = document.createElement("div");
+    front.className = "card-flight-front";
+    front.append(source.visual.cloneNode(true));
+    const final = document.createElement("div");
+    final.className = "card-flight-final";
+    final.append(target.querySelector(".player-card-display").cloneNode(true));
+    flight.append(front, final);
+    document.body.append(flight);
+    // Opacity animation hides the real badge without losing layout or hover state.
+    const hidden = target.animate([{ opacity: 0 }, { opacity: 0 }], { duration: 740, fill: "both" });
+    const dx = end.left - start.left;
+    const dy = end.top - start.top;
+    const motion = flight.animate([
+      { transform: "translate(0, 0) rotate(0deg)", width: `${start.width}px`, height: `${start.height}px`, borderRadius: "7px" },
+      { transform: `translate(${dx * .48}px, ${dy * .48 - 45}px) rotate(-6deg)`, width: `${start.width * .78 + end.width * .22}px`, height: `${start.height * .78 + end.height * .22}px`, borderRadius: "10px", offset: .45 },
+      { transform: `translate(${dx}px, ${dy}px) rotate(0deg)`, width: `${end.width}px`, height: `${end.height}px`, borderRadius: "4px" },
+    ], { duration: 740, easing: "cubic-bezier(.22,.65,.25,1)", fill: "forwards" });
+    front.animate([{ opacity: 1 }, { opacity: 1, offset: .3 }, { opacity: 0, offset: .85 }, { opacity: 0 }], { duration: 740, fill: "forwards" });
+    final.animate([{ opacity: 0 }, { opacity: 0, offset: .35 }, { opacity: 1, offset: .9 }, { opacity: 1 }], { duration: 740, fill: "forwards" });
+    const cleanup = () => { flight.remove(); hidden.cancel(); };
+    motion.finished.then(cleanup, cleanup);
+  });
+}
+
 function renderBoard() {
   const paused = !everyoneIsOnline() && currentRoom.status === "playing";
   const activePlayer = currentRoom.players.find((player) => player.uid === currentRoom.currentTurnUid);
@@ -489,6 +655,7 @@ function renderBoard() {
     ? `Ruch ${currentRoom.turnNumber}`
     : "";
 
+  const previousCards = captureCardFlights();
   renderPlayers();
   renderMarket(paused);
   renderBank(paused);
@@ -497,6 +664,7 @@ function renderBoard() {
   renderResolution(paused);
   renderFinished();
   updateConnectionLabel(paused);
+  animateCardFlights(previousCards);
 }
 
 function renderPlayers() {
@@ -508,38 +676,63 @@ function renderPlayers() {
     const resourceList = document.createElement("div");
 
     card.className = "game-player-card";
+    card.dataset.playerUid = player.uid;
     if (player.uid === currentRoom.currentTurnUid && currentRoom.status === "playing") {
       card.classList.add("is-active");
     }
     name.textContent = player.uid === currentUser.uid ? `${player.name} (Ty)` : player.name;
     score.className = "player-score";
-    score.textContent = `${player.points} pkt`;
+    score.textContent = `${player.points}/15 pkt`;
     heading.className = "game-player-heading";
     heading.append(name, score);
+    if (currentRoom.status === "finished" && currentRoom.winnerUids.includes(player.uid)) {
+      card.classList.add("is-winner");
+      const winnerBadge = document.createElement("div");
+      winnerBadge.className = "player-winner-badge";
+      winnerBadge.setAttribute("role", "status");
+      winnerBadge.textContent = currentRoom.winnerUids.length > 1
+        ? "♛ Współzwycięzca" : "♛ Zwycięzca";
+      const identity = document.createElement("div");
+      identity.className = "player-winner-identity";
+      identity.append(winnerBadge, name);
+      heading.prepend(identity);
+    }
     resourceList.className = "player-bonuses";
 
     for (const resource of resources) {
+      const bonusCount = Number(player.bonuses[resource] || 0);
+      if (bonusCount === 0) continue;
+
       const bonus = document.createElement("span");
       bonus.className = "bonus-count";
       const icon = makeResourceIcon(resource);
       const number = document.createElement("b");
       icon.alt = "";
-      number.textContent = player.bonuses[resource];
+      number.textContent = bonusCount;
       bonus.append(icon, number);
       resourceList.append(bonus);
     }
+    resourceList.prepend(createPlayerSectionHeading("Bonusy"));
 
     const tokens = document.createElement("div");
     tokens.className = "player-tokens";
     for (const type of tokenTypes) {
+      const tokenCount = Number(player.tokens[type] || 0);
+      if (tokenCount === 0) continue;
+
       const token = document.createElement("span");
       const count = document.createElement("b");
       token.className = "player-token";
       token.title = resourceNames[type];
-      count.textContent = String(player.tokens[type]);
+      count.textContent = String(tokenCount);
       token.append(makeResourceIcon(type), count);
       tokens.append(token);
     }
+    const tokenTotal = tokenTypes.reduce(
+      (total, type) => total + Number(player.tokens[type] || 0),
+      0,
+    );
+    tokens.prepend(createPlayerSectionHeading("Żetony", `(${tokenTotal}/10)`));
 
     const ownedCards = document.createElement("div");
     ownedCards.className = "player-visible-cards";
@@ -547,6 +740,7 @@ function renderPlayers() {
       const ownedCard = getCard(cardMap, cardId);
       ownedCards.append(makePlayerCardBadge(ownedCard));
     }
+    ownedCards.prepend(createPlayerSectionHeading("Kupione karty"));
 
     const reservations = document.createElement("section");
     const reservationHeading = document.createElement("div");
@@ -554,32 +748,77 @@ function renderPlayers() {
     const reservationCount = document.createElement("strong");
     const reservationCards = document.createElement("div");
     reservations.className = "player-reservations";
-    reservationHeading.className = "player-reservations-heading";
+    reservationHeading.className = "player-section-heading player-reservations-heading";
     reservationLabel.textContent = "Zarezerwowane";
     reservationCount.textContent = `(${player.reservedCount}/3)`;
     reservationCards.className = "player-visible-reservations";
     reservationHeading.append(reservationLabel, reservationCount);
 
-    if (player.uid === currentUser.uid) {
-      for (const cardId of ownPrivateState.reservedCardIds) {
-        reservationCards.append(makePlayerCardBadge(getCard(cardMap, cardId), true));
-      }
+    const publicIds = player.reservedCardIds;
+    const privateIds = ownPrivateState.reservedCardIds;
+    const reservedCardIds = player.uid === currentUser.uid &&
+      privateIds.length === player.reservedCount && publicIds?.length !== player.reservedCount
+      ? privateIds : (publicIds ?? (player.uid === currentUser.uid ? privateIds : []));
+    for (const cardId of reservedCardIds) {
+      reservationCards.append(makePlayerCardBadge(
+        getCard(cardMap, cardId), true, player.uid === currentUser.uid,
+      ));
     }
     reservations.append(reservationHeading, reservationCards);
 
     const ownedHeroes = document.createElement("div");
     ownedHeroes.className = "player-visible-heroes";
     for (const heroId of player.heroIds) {
-      const heroName = document.createElement("span");
-      heroName.textContent = getHero(heroMap, heroId).name;
-      ownedHeroes.append(heroName);
+      const hero = getHero(heroMap, heroId);
+      const badge = document.createElement("div");
+      const display = document.createElement("div");
+      const points = document.createElement("strong");
+      const avatar = document.createElement("img");
+      badge.className = "player-visible-card player-hero-badge";
+      badge.dataset.flightCard = `hero:${hero.id}`;
+      badge.dataset.flightZone = "hero";
+      badge.tabIndex = 0;
+      badge.setAttribute("aria-label", `${hero.name}: ${hero.victoryPoints} punktów zwycięstwa`);
+      display.className = "player-card-display";
+      points.className = "player-card-points";
+      points.textContent = String(hero.victoryPoints);
+      avatar.className = "player-hero-avatar";
+      avatar.src = hero.background;
+      avatar.alt = hero.name;
+      display.append(points, avatar);
+      const hoverHero = document.createElement("div");
+      hoverHero.className = "player-card-hover-card";
+      const preview = createHeroTile(hero);
+      preview.classList.add("player-hero-hover-preview");
+      hoverHero.append(preview);
+      badge.append(display, hoverHero);
+      ownedHeroes.append(badge);
     }
+    if (ownedHeroes.childElementCount > 0) {
+      ownedHeroes.prepend(createPlayerSectionHeading("Bohaterowie"));
+    }
+    ownedHeroes.hidden = player.heroIds.length === 0;
     card.append(heading, tokens, resourceList, ownedCards, reservations, ownedHeroes);
     return card;
   }));
 }
 
-function makePlayerCardBadge(card, isReserved = false) {
+function createPlayerSectionHeading(label, count = "") {
+  const heading = document.createElement("div");
+  const text = document.createElement("span");
+
+  heading.className = "player-section-heading";
+  text.textContent = label;
+  heading.append(text);
+  if (count) {
+    const value = document.createElement("strong");
+    value.textContent = count;
+    heading.append(value);
+  }
+  return heading;
+}
+
+function makePlayerCardBadge(card, isReserved = false, ownedByMe = false) {
   const badge = document.createElement("div");
   const display = document.createElement("div");
   const hoverCard = document.createElement("div");
@@ -587,6 +826,8 @@ function makePlayerCardBadge(card, isReserved = false) {
   const bonusIcon = makeResourceIcon(card.bonusResource);
 
   badge.className = "player-visible-card";
+  badge.dataset.flightCard = card.id;
+  badge.dataset.flightZone = isReserved ? "reserved" : "bought";
   badge.tabIndex = 0;
   badge.setAttribute(
     "aria-label",
@@ -601,7 +842,7 @@ function makePlayerCardBadge(card, isReserved = false) {
   hoverCard.className = "player-card-hover-card";
   hoverCard.append(createCardArtwork(card, "sprite-art player-card-hover-preview"));
 
-  if (isReserved && isMyTurn() && currentRoom.phase === "action") {
+  if (isReserved && ownedByMe && isMyTurn() && currentRoom.phase === "action") {
     const buyButton = makeButton("Kup", "game-button game-button-primary player-card-hover-buy");
     const player = currentRoom.players.find((entry) => entry.uid === currentUser.uid);
     buyButton.disabled = !getPayment(card, player);
@@ -666,6 +907,7 @@ function makeMarketCard(card) {
   const canBuy = Boolean(getPayment(card, player));
 
   article.className = "market-card";
+  article.dataset.flightCard = card.id;
   article.setAttribute("aria-label", `Karta ${card.id}`);
   article.tabIndex = 0;
   actions.className = "market-card-actions";
@@ -876,6 +1118,7 @@ function renderHeroes(paused) {
     const tile = createHeroTile(hero, canSelect ? () => performAction((game) => {
       selectHero(game, currentUser.uid, heroId, heroMap);
     }) : null);
+    tile.dataset.flightCard = `hero:${hero.id}`;
     container.append(tile);
   }
 
@@ -919,7 +1162,12 @@ function renderResolution(paused) {
       discardSelection = emptyCounts();
       discardSelectionKey = selectionKey;
     }
-    title.textContent = `Odrzuć dokładnie ${pending.count} znaczników`;
+    const tokenWord = pending.count === 1
+      ? "znacznik"
+      : pending.count >= 2 && pending.count <= 4
+        ? "znaczniki"
+        : "znaczników";
+    title.textContent = `Odrzuć dokładnie ${pending.count} ${tokenWord}`;
     title.id = "discard-title";
     dialogHeading.className = "discard-dialog-heading";
     const tokenCounter = document.createElement("strong");
@@ -1012,25 +1260,48 @@ function updateDiscardSelection(type, delta, amountElement, minusButton, plusBut
   }
 }
 
+const celebratedGames = new Set();
+
 function renderFinished() {
   const panel = elements["game-finished"];
-  panel.hidden = currentRoom.status !== "finished";
+  panel.hidden = true;
   panel.replaceChildren();
-  if (panel.hidden) return;
+  if (currentRoom.status !== "finished" || elements["game-board"].hidden) return;
+  const gameKey = `${currentRoomId}:${currentRoom.startedAt}`;
+  if (celebratedGames.has(gameKey)) return;
+  celebratedGames.add(gameKey);
+  if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
-  const heading = document.createElement("h3");
-  const winners = currentRoom.players.filter((player) => currentRoom.winnerUids.includes(player.uid));
-  heading.textContent = winners.length > 1
-    ? "Gra zakończyła się remisem"
-    : `Zwycięża ${winners[0]?.name || "—"}!`;
-  const scores = document.createElement("div");
-  scores.className = "final-scores";
-  for (const player of [...currentRoom.players].sort((left, right) => right.points - left.points)) {
-    const line = document.createElement("p");
-    line.textContent = `${player.name}: ${player.points} pkt, ${player.boughtCardIds.length} kart`;
-    scores.append(line);
+  const confetti = document.createElement("div");
+  confetti.className = "victory-confetti";
+  confetti.setAttribute("aria-hidden", "true");
+  const colors = ["#e9c46a", "#f4a261", "#e76f51", "#63c9b4", "#82adff", "#e8a8e0"];
+  const animations = [];
+  for (let index = 0; index < 100; index += 1) {
+    const piece = document.createElement("i");
+    piece.className = "victory-confetti-piece";
+    piece.style.left = `${Math.random() * 100}%`;
+    piece.style.backgroundColor = colors[index % colors.length];
+    piece.style.width = `${5 + Math.random() * 6}px`;
+    piece.style.height = `${8 + Math.random() * 8}px`;
+    piece.style.borderRadius = index % 3 === 0 ? "50%" : "1px";
+    confetti.append(piece);
+    const drift = (Math.random() - .5) * 280;
+    const rotation = (Math.random() - .5) * 1440;
+    animations.push(piece.animate([
+      { transform: "translate3d(0, -30px, 0) rotate(0deg)", opacity: 0 },
+      { opacity: 1, offset: .08 },
+      { transform: `translate3d(${drift * .4}px, 45vh, 0) rotate(${rotation * .45}deg)`, opacity: 1, offset: .5 },
+      { transform: `translate3d(${drift}px, 105vh, 0) rotate(${rotation}deg)`, opacity: 0 },
+    ], {
+      duration: 3000 + Math.random() * 1800,
+      delay: Math.random() * 1600,
+      easing: "linear",
+      fill: "both",
+    }).finished);
   }
-  panel.append(heading, scores);
+  document.body.append(confetti);
+  Promise.allSettled(animations).then(() => confetti.remove());
 }
 
 function updateConnectionLabel(paused = false) {
@@ -1139,7 +1410,7 @@ async function leaveGame() {
     batch.set(doc(db, "roomClosures", roomId), {
       memberUids: room.memberUids,
       closedByUid: currentUser.uid,
-      closedByName: leavingPlayer?.name || currentUser.displayName || "Gracz",
+      closedByName: leavingPlayer?.name || getPlayerName(currentUser),
       closedAt: serverTimestamp(),
     });
     for (const uid of room.memberUids) {
@@ -1196,6 +1467,16 @@ async function signIn() {
   }
 }
 
+async function signInAnonymouslyForLocalTest() {
+  if (!localTestMode) return;
+  try {
+    await signInAnonymously(auth);
+  } catch (error) {
+    console.error(error);
+    showMessage(firebaseErrorMessage(error), "error");
+  }
+}
+
 async function signOutUser() {
   try {
     if (currentRoomId && realtimeDb) {
@@ -1232,12 +1513,21 @@ async function copyInvite() {
 
 async function bootstrap() {
   elements["sign-in-button"].addEventListener("click", signIn);
+  elements["anonymous-sign-in-button"].hidden = !localTestMode;
+  elements["local-test-note"].hidden = !localTestMode;
+  if (localTestMode) {
+    elements["auth-description"].textContent = "Utwórz tymczasowe konto w emulatorze i testuj partię w osobnej karcie.";
+  }
+  elements["anonymous-sign-in-button"].addEventListener("click", signInAnonymouslyForLocalTest);
   elements["sign-out-button"].addEventListener("click", signOutUser);
   elements["create-room-button"].addEventListener("click", createRoom);
   elements["start-game-button"].addEventListener("click", startGame);
   elements["copy-invite-button"].addEventListener("click", copyInvite);
   elements["leave-room-button"].addEventListener("click", leaveRoom);
   elements["leave-game-button"].addEventListener("click", leaveGame);
+  elements["room-closure-dismiss"].addEventListener("click", () => {
+    elements["room-closure-dialog"].close();
+  });
   elements["game-back-button"].addEventListener("click", () => {
     activeScreen = "home";
     renderGame();
@@ -1258,6 +1548,7 @@ async function bootstrap() {
   await initializeGameData();
   renderEmptyConfig();
   if (!firebaseReady) return;
+  await authInitialization;
 
   onAuthStateChanged(auth, async (user) => {
     setSignedIn(user);

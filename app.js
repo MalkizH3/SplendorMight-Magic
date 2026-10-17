@@ -295,8 +295,11 @@ function renderCards() {
 
 searchInput.addEventListener("input", renderCards);
 
-document.querySelector("#preview-close").addEventListener("click", () => {
-  preview.close();
+document.querySelector("#preview-close").addEventListener("click", (event) => {
+  event.preventDefault();
+  if (preview.open) {
+    preview.close();
+  }
 });
 
 downloadButton.addEventListener("click", downloadPreviewAsPng);

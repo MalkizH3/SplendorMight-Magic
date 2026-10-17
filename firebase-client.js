@@ -1,9 +1,12 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
 import {
+  browserSessionPersistence,
   GoogleAuthProvider,
   connectAuthEmulator,
   getAuth,
   onAuthStateChanged,
+  setPersistence,
+  signInAnonymously,
   signInWithPopup,
   signOut,
 } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
@@ -27,7 +30,23 @@ import {
   serverTimestamp,
   set,
 } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-database.js";
-import { firebaseConfig, useFirebaseEmulators } from "./firebase-config.js";
+import {
+  firebaseConfig as productionFirebaseConfig,
+  useFirebaseEmulators as configuredEmulators,
+} from "./firebase-config.js";
+
+// Temporary local test mode is available only on localhost.
+// It uses Firebase Emulator Suite and a demo project ID; it cannot reach production.
+export const localTestMode = ["localhost", "127.0.0.1"].includes(location.hostname);
+const firebaseConfig = localTestMode
+  ? {
+      ...productionFirebaseConfig,
+      authDomain: "localhost",
+      projectId: "demo-splendor-local",
+      databaseURL: "https://demo-splendor-local-default-rtdb.firebaseio.com",
+    }
+  : productionFirebaseConfig;
+const useFirebaseEmulators = localTestMode || configuredEmulators;
 
 const requiredConfig = ["apiKey", "authDomain", "projectId", "appId"];
 export const firebaseReady = requiredConfig.every((key) => {
@@ -41,10 +60,14 @@ export const firebasePresenceReady = Boolean(
 let auth = null;
 let db = null;
 let realtimeDb = null;
+let authInitialization = Promise.resolve();
 
 if (firebaseReady) {
   const app = initializeApp(firebaseConfig);
   auth = getAuth(app);
+  if (localTestMode) {
+    authInitialization = setPersistence(auth, browserSessionPersistence);
+  }
   db = getFirestore(app);
   if (firebasePresenceReady) {
     realtimeDb = getDatabase(app);
@@ -76,5 +99,7 @@ export {
   signInWithPopup,
   signOut,
   GoogleAuthProvider,
+  authInitialization,
   realtimeDb,
+  signInAnonymously,
 };

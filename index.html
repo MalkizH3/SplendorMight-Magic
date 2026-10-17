@@ -6,9 +6,9 @@
     <meta name="theme-color" content="#171817" />
     <meta name="description" content="Zagraj online i przeglądaj karty Splendor Might & Magic." />
     <title>Splendor Might &amp; Magic</title>
-    <link rel="stylesheet" href="styles.css" />
-    <link rel="stylesheet" href="card-layers.css" />
-    <link rel="stylesheet" href="game.css" />
+    <link rel="stylesheet" href="styles.css?v=rounded-corners-1" />
+    <link rel="stylesheet" href="card-layers.css?v=rounded-corners-1" />
+    <link rel="stylesheet" href="game.css?v=rounded-corners-1" />
   </head>
   <body>
     <header class="topbar">
@@ -18,7 +18,8 @@
       </a>
       <nav class="topbar-nav" aria-label="Nawigacja główna">
         <a href="#game-section">Gra online</a>
-        <a href="#gallery-section">Galeria</a>
+        <a href="./galeria/">Galeria</a>
+        <a href="./instrukcja/" target="_blank" rel="noopener noreferrer">Instrukcja<span class="sr-only"> (otwiera się w nowej karcie)</span></a>
       </nav>
     </header>
 
@@ -49,10 +50,14 @@
         <section class="game-panel auth-panel" id="auth-panel" aria-label="Konto gracza">
           <div class="game-panel-copy">
             <h3>Dołącz do gry</h3>
-            <p>Zaloguj się kontem Google, aby utworzyć partię albo otworzyć link zaproszenia.</p>
+            <p id="auth-description">Zaloguj się kontem Google, aby utworzyć partię albo otworzyć link zaproszenia.</p>
+            <p class="local-test-note" id="local-test-note" hidden>Lokalny tryb testowy: konta i partie pozostają w emulatorze Firebase.</p>
           </div>
           <button class="game-button game-button-primary" id="sign-in-button" type="button">
             Zaloguj przez Google
+          </button>
+          <button class="game-button" id="anonymous-sign-in-button" type="button" hidden>
+            Wejdź jako tester
           </button>
           <div class="game-profile" id="game-profile" hidden>
             <span id="profile-name"></span>
@@ -152,39 +157,20 @@
           <dialog class="game-resolution discard-dialog" id="discard-dialog" aria-labelledby="discard-title"></dialog>
           <section class="game-finished" id="game-finished" aria-live="polite" hidden></section>
         </section>
+        <dialog
+          class="game-resolution room-closure-dialog"
+          id="room-closure-dialog"
+          aria-labelledby="room-closure-title"
+          aria-describedby="room-closure-message"
+        >
+          <h3 id="room-closure-title">Gra zakończona</h3>
+          <p id="room-closure-message"></p>
+          <button class="game-button game-button-primary" id="room-closure-dismiss" type="button">
+            Rozumiem
+          </button>
+        </dialog>
       </section>
 
-      <section id="gallery-section" class="gallery" aria-label="Galeria sprite’ów">
-        <div class="gallery-toolbar">
-          <div class="gallery-heading">
-            <h2>Przykładowe karty</h2>
-            <span class="count" id="sprite-count">0</span>
-          </div>
-          <label class="search-wrap">
-            <span class="search-icon" aria-hidden="true">⌕</span>
-            <span class="sr-only">Szukaj sprite’ów</span>
-            <input
-              id="search"
-              type="search"
-              placeholder="Szukaj w galerii…"
-              autocomplete="off"
-            />
-            <kbd>/</kbd>
-          </label>
-        </div>
-        <div class="filter-row" id="filters" aria-label="Filtruj kategorię"></div>
-        <div class="sprite-grid" id="sprite-grid" aria-live="polite"></div>
-      </section>
-
-      <section class="hero-gallery" aria-labelledby="heroes-title">
-        <div class="gallery-toolbar">
-          <div class="gallery-heading">
-            <h2 id="heroes-title">Kafelki bohaterów</h2>
-            <span class="count" id="hero-count">00</span>
-          </div>
-        </div>
-        <div class="hero-grid" id="hero-grid" aria-live="polite"></div>
-      </section>
     </main>
 
     <footer>
@@ -194,49 +180,6 @@
       GRA ONLINE &amp; GALERIA
     </footer>
 
-    <dialog id="preview" class="preview" aria-label="Podgląd sprite’a">
-      <button class="preview-close" id="preview-close" aria-label="Zamknij podgląd">×</button>
-      <div class="preview-image-wrap">
-        <div class="sprite-art preview-card-art">
-          <img id="preview-image" alt="" />
-          <svg
-            class="card-overlay"
-            viewBox="0 0 1504 2080"
-            preserveAspectRatio="xMidYMid meet"
-            role="img"
-            aria-label="Punkty zwycięstwa i bonusowy surowiec"
-          >
-            <rect width="1504" height="416" fill="white" fill-opacity="0.7" />
-            <image
-              id="preview-bonus-resource"
-              x="1070"
-              y="28"
-              width="360"
-              height="360"
-              preserveAspectRatio="xMidYMid meet"
-            />
-            <text
-              class="card-overlay-points"
-              id="preview-points"
-              x="180"
-              y="190"
-              text-anchor="middle"
-              dominant-baseline="central"
-              font-size="400"
-            ></text>
-            <g id="preview-card-costs"></g>
-          </svg>
-        </div>
-      </div>
-      <div class="preview-actions">
-        <button class="preview-download" id="preview-download" type="button">
-          Pobierz jako PNG
-        </button>
-        <span class="sr-only" id="download-status" aria-live="polite"></span>
-      </div>
-    </dialog>
-
-    <script type="module" src="app.js?v=heroes-gallery"></script>
-    <script type="module" src="game.js"></script>
+    <script type="module" src="game.js?v=player-sections-1"></script>
   </body>
 </html>

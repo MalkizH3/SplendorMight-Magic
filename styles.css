@@ -23,7 +23,13 @@ body {
   color: var(--text);
   font-family: var(--sans);
   min-height: 100vh;
-  background-image: radial-gradient(ellipse at 50% -35%,#343329 0%,transparent 55%);
+  background-image:
+    radial-gradient(ellipse at 50% -35%,#34332940 0%,transparent 55%),
+    url("assets/fantasy-cavern-background.png");
+  background-position: center;
+  background-size: cover;
+  background-attachment: fixed;
+  background-repeat: no-repeat;
 }
 
 .topbar {
@@ -55,6 +61,38 @@ body {
   color: var(--gold);
   font-family: var(--serif);
   font-style: italic;
+}
+
+.topbar-nav {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.topbar-nav a {
+  padding: 9px 13px;
+  border: 1px solid transparent;
+  border-radius: 5px;
+  color: #c5c1b5;
+  font: 500 10px var(--mono);
+  letter-spacing: .08em;
+  text-decoration: none;
+  text-transform: uppercase;
+  transition: background-color .18s ease, border-color .18s ease, color .18s ease;
+}
+
+.topbar-nav a:hover,
+.topbar-nav a:focus-visible {
+  border-color: #c7a56666;
+  background: #c7a56616;
+  color: #f0d59f;
+  outline: none;
+}
+
+.gallery-page .topbar-nav a[aria-current="page"] {
+  border-color: #c7a56675;
+  background: #c7a56620;
+  color: #f0d59f;
 }
 
 .topbar-note,.eyebrow,footer {
@@ -119,6 +157,7 @@ h1 em {
   width: min(520px, 100%);
   height: auto;
   margin: 0 auto;
+  filter: drop-shadow(0 5px 12px #000b) drop-shadow(0 0 18px #0006);
 }
 
 .gallery {
@@ -239,6 +278,7 @@ h2 {
 }
 
 .hero-tile {
+  border-radius: 6px;
   position: relative;
   container-type: inline-size;
   aspect-ratio: 1;
@@ -465,7 +505,7 @@ footer {
   position: absolute;
   top: 11px;
   right: 13px;
-  z-index: 1;
+  z-index: 10;
   border: 0;
   background: #171817bb;
   color: #eee;
