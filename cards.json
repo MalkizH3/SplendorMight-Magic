@@ -11,7 +11,7 @@
     },
     "bonusResource": "gems",
     "victoryPoints": 1,
-    "background": "sprites/tier1/Gems1-2.webp"
+    "background": "sprites/tier1/Gems1-2.png"
   },
   {
     "id": 2,
@@ -25,7 +25,7 @@
     },
     "bonusResource": "gems",
     "victoryPoints": 0,
-    "background": "sprites/tier1/Gems1-2.webp"
+    "background": "sprites/tier1/Gems1-2.png"
   },
   {
     "id": 3,
@@ -39,7 +39,7 @@
     },
     "bonusResource": "gems",
     "victoryPoints": 0,
-    "background": "sprites/tier1/Gems1-2.webp"
+    "background": "sprites/tier1/Gems1-2.png"
   },
   {
     "id": 4,
@@ -53,7 +53,7 @@
     },
     "bonusResource": "gems",
     "victoryPoints": 0,
-    "background": "sprites/tier1/Gems1-2.webp"
+    "background": "sprites/tier1/Gems1-2.png"
   },
   {
     "id": 5,
@@ -67,7 +67,7 @@
     },
     "bonusResource": "gems",
     "victoryPoints": 0,
-    "background": "sprites/tier1/Gems1.webp"
+    "background": "sprites/tier1/Gems1.png"
   },
   {
     "id": 6,
@@ -81,7 +81,7 @@
     },
     "bonusResource": "gems",
     "victoryPoints": 0,
-    "background": "sprites/tier1/Gems1.webp"
+    "background": "sprites/tier1/Gems1.png"
   },
   {
     "id": 7,
@@ -95,7 +95,7 @@
     },
     "bonusResource": "gems",
     "victoryPoints": 0,
-    "background": "sprites/tier1/Gems1.webp"
+    "background": "sprites/tier1/Gems1.png"
   },
   {
     "id": 8,
@@ -109,7 +109,7 @@
     },
     "bonusResource": "gems",
     "victoryPoints": 0,
-    "background": "sprites/tier1/Gems1.webp"
+    "background": "sprites/tier1/Gems1.png"
   },
   {
     "id": 9,
@@ -123,7 +123,7 @@
     },
     "bonusResource": "sulfur",
     "victoryPoints": 1,
-    "background": "sprites/tier1/Sulfur1-2.webp"
+    "background": "sprites/tier1/Sulfur1-2.png"
   },
   {
     "id": 10,
@@ -137,7 +137,7 @@
     },
     "bonusResource": "sulfur",
     "victoryPoints": 0,
-    "background": "sprites/tier1/Sulfur1-2.webp"
+    "background": "sprites/tier1/Sulfur1-2.png"
   },
   {
     "id": 11,
@@ -151,7 +151,7 @@
     },
     "bonusResource": "sulfur",
     "victoryPoints": 0,
-    "background": "sprites/tier1/Sulfur1-2.webp"
+    "background": "sprites/tier1/Sulfur1-2.png"
   },
   {
     "id": 12,
@@ -165,7 +165,7 @@
     },
     "bonusResource": "sulfur",
     "victoryPoints": 0,
-    "background": "sprites/tier1/Sulfur1-2.webp"
+    "background": "sprites/tier1/Sulfur1-2.png"
   },
   {
     "id": 13,
@@ -179,7 +179,7 @@
     },
     "bonusResource": "sulfur",
     "victoryPoints": 0,
-    "background": "sprites/tier1/Sulfur1.webp"
+    "background": "sprites/tier1/Sulfur1.png"
   },
   {
     "id": 14,
@@ -193,7 +193,7 @@
     },
     "bonusResource": "sulfur",
     "victoryPoints": 0,
-    "background": "sprites/tier1/Sulfur1.webp"
+    "background": "sprites/tier1/Sulfur1.png"
   },
   {
     "id": 15,
@@ -207,7 +207,7 @@
     },
     "bonusResource": "sulfur",
     "victoryPoints": 0,
-    "background": "sprites/tier1/Sulfur1.webp"
+    "background": "sprites/tier1/Sulfur1.png"
   },
   {
     "id": 16,
@@ -221,7 +221,7 @@
     },
     "bonusResource": "sulfur",
     "victoryPoints": 0,
-    "background": "sprites/tier1/Sulfur1.webp"
+    "background": "sprites/tier1/Sulfur1.png"
   },
   {
     "id": 17,
@@ -235,7 +235,7 @@
     },
     "bonusResource": "ore",
     "victoryPoints": 1,
-    "background": "sprites/tier1/Ore1-2.webp"
+    "background": "sprites/tier1/Ore1-2.png"
   },
   {
     "id": 18,
@@ -249,7 +249,7 @@
     },
     "bonusResource": "ore",
     "victoryPoints": 0,
-    "background": "sprites/tier1/Ore1-2.webp"
+    "background": "sprites/tier1/Ore1-2.png"
   },
   {
     "id": 19,
@@ -263,7 +263,7 @@
     },
     "bonusResource": "ore",
     "victoryPoints": 0,
-    "background": "sprites/tier1/Ore1-2.webp"
+    "background": "sprites/tier1/Ore1-2.png"
   },
   {
     "id": 20,
@@ -277,7 +277,7 @@
     },
     "bonusResource": "ore",
     "victoryPoints": 0,
-    "background": "sprites/tier1/Ore1-2.webp"
+    "background": "sprites/tier1/Ore1-2.png"
   },
   {
     "id": 21,
@@ -291,7 +291,7 @@
     },
     "bonusResource": "ore",
     "victoryPoints": 0,
-    "background": "sprites/tier1/Ore1.webp"
+    "background": "sprites/tier1/Ore1.png"
   },
   {
     "id": 22,
@@ -305,7 +305,7 @@
     },
     "bonusResource": "ore",
     "victoryPoints": 0,
-    "background": "sprites/tier1/Ore1.webp"
+    "background": "sprites/tier1/Ore1.png"
   },
   {
     "id": 23,
@@ -319,7 +319,7 @@
     },
     "bonusResource": "ore",
     "victoryPoints": 0,
-    "background": "sprites/tier1/Ore1.webp"
+    "background": "sprites/tier1/Ore1.png"
   },
   {
     "id": 24,
@@ -333,7 +333,7 @@
     },
     "bonusResource": "ore",
     "victoryPoints": 0,
-    "background": "sprites/tier1/Ore1.webp"
+    "background": "sprites/tier1/Ore1.png"
   },
   {
     "id": 25,
@@ -347,7 +347,7 @@
     },
     "bonusResource": "mercury",
     "victoryPoints": 1,
-    "background": "sprites/tier1/Mercury1-2.webp"
+    "background": "sprites/tier1/Mercury1-2.png"
   },
   {
     "id": 26,
@@ -361,7 +361,7 @@
     },
     "bonusResource": "mercury",
     "victoryPoints": 0,
-    "background": "sprites/tier1/Mercury1-2.webp"
+    "background": "sprites/tier1/Mercury1-2.png"
   },
   {
     "id": 27,
@@ -375,7 +375,7 @@
     },
     "bonusResource": "mercury",
     "victoryPoints": 0,
-    "background": "sprites/tier1/Mercury1-2.webp"
+    "background": "sprites/tier1/Mercury1-2.png"
   },
   {
     "id": 28,
@@ -389,7 +389,7 @@
     },
     "bonusResource": "mercury",
     "victoryPoints": 0,
-    "background": "sprites/tier1/Mercury1-2.webp"
+    "background": "sprites/tier1/Mercury1-2.png"
   },
   {
     "id": 29,
@@ -403,7 +403,7 @@
     },
     "bonusResource": "mercury",
     "victoryPoints": 0,
-    "background": "sprites/tier1/Mercury1.webp"
+    "background": "sprites/tier1/Mercury1.png"
   },
   {
     "id": 30,
@@ -417,7 +417,7 @@
     },
     "bonusResource": "mercury",
     "victoryPoints": 0,
-    "background": "sprites/tier1/Mercury1.webp"
+    "background": "sprites/tier1/Mercury1.png"
   },
   {
     "id": 31,
@@ -431,7 +431,7 @@
     },
     "bonusResource": "mercury",
     "victoryPoints": 0,
-    "background": "sprites/tier1/Mercury1.webp"
+    "background": "sprites/tier1/Mercury1.png"
   },
   {
     "id": 32,
@@ -445,7 +445,7 @@
     },
     "bonusResource": "mercury",
     "victoryPoints": 0,
-    "background": "sprites/tier1/Mercury1.webp"
+    "background": "sprites/tier1/Mercury1.png"
   },
   {
     "id": 33,
@@ -459,7 +459,7 @@
     },
     "bonusResource": "crystal",
     "victoryPoints": 1,
-    "background": "sprites/tier1/Crystal1-2.webp"
+    "background": "sprites/tier1/Crystal1-2.png"
   },
   {
     "id": 34,
@@ -473,7 +473,7 @@
     },
     "bonusResource": "crystal",
     "victoryPoints": 0,
-    "background": "sprites/tier1/Crystal1-2.webp"
+    "background": "sprites/tier1/Crystal1-2.png"
   },
   {
     "id": 35,
@@ -487,7 +487,7 @@
     },
     "bonusResource": "crystal",
     "victoryPoints": 0,
-    "background": "sprites/tier1/Crystal1-2.webp"
+    "background": "sprites/tier1/Crystal1-2.png"
   },
   {
     "id": 36,
@@ -501,7 +501,7 @@
     },
     "bonusResource": "crystal",
     "victoryPoints": 0,
-    "background": "sprites/tier1/Crystal1-2.webp"
+    "background": "sprites/tier1/Crystal1-2.png"
   },
   {
     "id": 37,
@@ -515,7 +515,7 @@
     },
     "bonusResource": "crystal",
     "victoryPoints": 0,
-    "background": "sprites/tier1/Crystal1.webp"
+    "background": "sprites/tier1/Crystal1.png"
   },
   {
     "id": 38,
@@ -529,7 +529,7 @@
     },
     "bonusResource": "crystal",
     "victoryPoints": 0,
-    "background": "sprites/tier1/Crystal1.webp"
+    "background": "sprites/tier1/Crystal1.png"
   },
   {
     "id": 39,
@@ -543,7 +543,7 @@
     },
     "bonusResource": "crystal",
     "victoryPoints": 0,
-    "background": "sprites/tier1/Crystal1.webp"
+    "background": "sprites/tier1/Crystal1.png"
   },
   {
     "id": 40,
@@ -557,7 +557,7 @@
     },
     "bonusResource": "crystal",
     "victoryPoints": 0,
-    "background": "sprites/tier1/Crystal1.webp"
+    "background": "sprites/tier1/Crystal1.png"
   },
   {
     "id": 41,
@@ -571,7 +571,7 @@
     },
     "bonusResource": "gems",
     "victoryPoints": 3,
-    "background": "sprites/tier2/Gems2-2.webp"
+    "background": "sprites/tier2/Gems2-2.png"
   },
   {
     "id": 42,
@@ -585,7 +585,7 @@
     },
     "bonusResource": "gems",
     "victoryPoints": 2,
-    "background": "sprites/tier2/Gems2-2.webp"
+    "background": "sprites/tier2/Gems2-2.png"
   },
   {
     "id": 43,
@@ -599,7 +599,7 @@
     },
     "bonusResource": "gems",
     "victoryPoints": 2,
-    "background": "sprites/tier2/Gems2-2.webp"
+    "background": "sprites/tier2/Gems2-2.png"
   },
   {
     "id": 44,
@@ -613,7 +613,7 @@
     },
     "bonusResource": "gems",
     "victoryPoints": 2,
-    "background": "sprites/tier2/Gems2.webp"
+    "background": "sprites/tier2/Gems2.png"
   },
   {
     "id": 45,
@@ -627,7 +627,7 @@
     },
     "bonusResource": "gems",
     "victoryPoints": 1,
-    "background": "sprites/tier2/Gems2.webp"
+    "background": "sprites/tier2/Gems2.png"
   },
   {
     "id": 46,
@@ -641,7 +641,7 @@
     },
     "bonusResource": "gems",
     "victoryPoints": 1,
-    "background": "sprites/tier2/Gems2.webp"
+    "background": "sprites/tier2/Gems2.png"
   },
   {
     "id": 47,
@@ -655,7 +655,7 @@
     },
     "bonusResource": "sulfur",
     "victoryPoints": 3,
-    "background": "sprites/tier2/Sulfur2-2.webp"
+    "background": "sprites/tier2/Sulfur2-2.png"
   },
   {
     "id": 48,
@@ -669,7 +669,7 @@
     },
     "bonusResource": "sulfur",
     "victoryPoints": 2,
-    "background": "sprites/tier2/Sulfur2-2.webp"
+    "background": "sprites/tier2/Sulfur2-2.png"
   },
   {
     "id": 49,
@@ -683,7 +683,7 @@
     },
     "bonusResource": "sulfur",
     "victoryPoints": 2,
-    "background": "sprites/tier2/Sulfur2-2.webp"
+    "background": "sprites/tier2/Sulfur2-2.png"
   },
   {
     "id": 50,
@@ -697,7 +697,7 @@
     },
     "bonusResource": "sulfur",
     "victoryPoints": 2,
-    "background": "sprites/tier2/Sulfur2.webp"
+    "background": "sprites/tier2/Sulfur2.png"
   },
   {
     "id": 51,
@@ -711,7 +711,7 @@
     },
     "bonusResource": "sulfur",
     "victoryPoints": 1,
-    "background": "sprites/tier2/Sulfur2.webp"
+    "background": "sprites/tier2/Sulfur2.png"
   },
   {
     "id": 52,
@@ -725,7 +725,7 @@
     },
     "bonusResource": "sulfur",
     "victoryPoints": 1,
-    "background": "sprites/tier2/Sulfur2.webp"
+    "background": "sprites/tier2/Sulfur2.png"
   },
   {
     "id": 53,
@@ -739,7 +739,7 @@
     },
     "bonusResource": "ore",
     "victoryPoints": 3,
-    "background": "sprites/tier2/Ore2-2.webp"
+    "background": "sprites/tier2/Ore2-2.png"
   },
   {
     "id": 54,
@@ -753,7 +753,7 @@
     },
     "bonusResource": "ore",
     "victoryPoints": 2,
-    "background": "sprites/tier2/Ore2-2.webp"
+    "background": "sprites/tier2/Ore2-2.png"
   },
   {
     "id": 55,
@@ -767,7 +767,7 @@
     },
     "bonusResource": "ore",
     "victoryPoints": 2,
-    "background": "sprites/tier2/Ore2-2.webp"
+    "background": "sprites/tier2/Ore2-2.png"
   },
   {
     "id": 56,
@@ -781,7 +781,7 @@
     },
     "bonusResource": "ore",
     "victoryPoints": 2,
-    "background": "sprites/tier2/Ore2.webp"
+    "background": "sprites/tier2/Ore2.png"
   },
   {
     "id": 57,
@@ -795,7 +795,7 @@
     },
     "bonusResource": "ore",
     "victoryPoints": 1,
-    "background": "sprites/tier2/Ore2.webp"
+    "background": "sprites/tier2/Ore2.png"
   },
   {
     "id": 58,
@@ -809,7 +809,7 @@
     },
     "bonusResource": "ore",
     "victoryPoints": 1,
-    "background": "sprites/tier2/Ore2.webp"
+    "background": "sprites/tier2/Ore2.png"
   },
   {
     "id": 59,
@@ -823,7 +823,7 @@
     },
     "bonusResource": "mercury",
     "victoryPoints": 3,
-    "background": "sprites/tier2/Mercury2-2.webp"
+    "background": "sprites/tier2/Mercury2-2.png"
   },
   {
     "id": 60,
@@ -837,7 +837,7 @@
     },
     "bonusResource": "mercury",
     "victoryPoints": 2,
-    "background": "sprites/tier2/Mercury2-2.webp"
+    "background": "sprites/tier2/Mercury2-2.png"
   },
   {
     "id": 61,
@@ -851,7 +851,7 @@
     },
     "bonusResource": "mercury",
     "victoryPoints": 2,
-    "background": "sprites/tier2/Mercury2-2.webp"
+    "background": "sprites/tier2/Mercury2-2.png"
   },
   {
     "id": 62,
@@ -865,7 +865,7 @@
     },
     "bonusResource": "mercury",
     "victoryPoints": 2,
-    "background": "sprites/tier2/Mercury2.webp"
+    "background": "sprites/tier2/Mercury2.png"
   },
   {
     "id": 63,
@@ -879,7 +879,7 @@
     },
     "bonusResource": "mercury",
     "victoryPoints": 1,
-    "background": "sprites/tier2/Mercury2.webp"
+    "background": "sprites/tier2/Mercury2.png"
   },
   {
     "id": 64,
@@ -893,7 +893,7 @@
     },
     "bonusResource": "mercury",
     "victoryPoints": 1,
-    "background": "sprites/tier2/Mercury2.webp"
+    "background": "sprites/tier2/Mercury2.png"
   },
   {
     "id": 65,
@@ -907,7 +907,7 @@
     },
     "bonusResource": "crystal",
     "victoryPoints": 3,
-    "background": "sprites/tier2/Crystal2-2.webp"
+    "background": "sprites/tier2/Crystal2-2.png"
   },
   {
     "id": 66,
@@ -921,7 +921,7 @@
     },
     "bonusResource": "crystal",
     "victoryPoints": 2,
-    "background": "sprites/tier2/Crystal2-2.webp"
+    "background": "sprites/tier2/Crystal2-2.png"
   },
   {
     "id": 67,
@@ -935,7 +935,7 @@
     },
     "bonusResource": "crystal",
     "victoryPoints": 2,
-    "background": "sprites/tier2/Crystal2-2.webp"
+    "background": "sprites/tier2/Crystal2-2.png"
   },
   {
     "id": 68,
@@ -949,7 +949,7 @@
     },
     "bonusResource": "crystal",
     "victoryPoints": 2,
-    "background": "sprites/tier2/Crystal2.webp"
+    "background": "sprites/tier2/Crystal2.png"
   },
   {
     "id": 69,
@@ -963,7 +963,7 @@
     },
     "bonusResource": "crystal",
     "victoryPoints": 1,
-    "background": "sprites/tier2/Crystal2.webp"
+    "background": "sprites/tier2/Crystal2.png"
   },
   {
     "id": 70,
@@ -977,7 +977,7 @@
     },
     "bonusResource": "crystal",
     "victoryPoints": 1,
-    "background": "sprites/tier2/Crystal2.webp"
+    "background": "sprites/tier2/Crystal2.png"
   },
   {
     "id": 71,
@@ -991,7 +991,7 @@
     },
     "bonusResource": "gems",
     "victoryPoints": 5,
-    "background": "sprites/tier3/Gems3-2.webp"
+    "background": "sprites/tier3/Gems3-2.png"
   },
   {
     "id": 72,
@@ -1005,7 +1005,7 @@
     },
     "bonusResource": "gems",
     "victoryPoints": 4,
-    "background": "sprites/tier3/Gems3-2.webp"
+    "background": "sprites/tier3/Gems3-2.png"
   },
   {
     "id": 73,
@@ -1019,7 +1019,7 @@
     },
     "bonusResource": "gems",
     "victoryPoints": 4,
-    "background": "sprites/tier3/Gems3.webp"
+    "background": "sprites/tier3/Gems3.png"
   },
   {
     "id": 74,
@@ -1033,7 +1033,7 @@
     },
     "bonusResource": "gems",
     "victoryPoints": 3,
-    "background": "sprites/tier3/Gems3.webp"
+    "background": "sprites/tier3/Gems3.png"
   },
   {
     "id": 75,
@@ -1047,7 +1047,7 @@
     },
     "bonusResource": "sulfur",
     "victoryPoints": 5,
-    "background": "sprites/tier3/Sulfur3-2.webp"
+    "background": "sprites/tier3/Sulfur3-2.png"
   },
   {
     "id": 76,
@@ -1061,7 +1061,7 @@
     },
     "bonusResource": "sulfur",
     "victoryPoints": 4,
-    "background": "sprites/tier3/Sulfur3-2.webp"
+    "background": "sprites/tier3/Sulfur3-2.png"
   },
   {
     "id": 77,
@@ -1075,7 +1075,7 @@
     },
     "bonusResource": "sulfur",
     "victoryPoints": 4,
-    "background": "sprites/tier3/Sulfur3.webp"
+    "background": "sprites/tier3/Sulfur3.png"
   },
   {
     "id": 78,
@@ -1089,7 +1089,7 @@
     },
     "bonusResource": "sulfur",
     "victoryPoints": 3,
-    "background": "sprites/tier3/Sulfur3.webp"
+    "background": "sprites/tier3/Sulfur3.png"
   },
   {
     "id": 79,
@@ -1103,7 +1103,7 @@
     },
     "bonusResource": "ore",
     "victoryPoints": 5,
-    "background": "sprites/tier3/Ore3-2.webp"
+    "background": "sprites/tier3/Ore3-2.png"
   },
   {
     "id": 80,
@@ -1117,7 +1117,7 @@
     },
     "bonusResource": "ore",
     "victoryPoints": 4,
-    "background": "sprites/tier3/Ore3-2.webp"
+    "background": "sprites/tier3/Ore3-2.png"
   },
   {
     "id": 81,
@@ -1131,7 +1131,7 @@
     },
     "bonusResource": "ore",
     "victoryPoints": 4,
-    "background": "sprites/tier3/Ore3.webp"
+    "background": "sprites/tier3/Ore3.png"
   },
   {
     "id": 82,
@@ -1145,7 +1145,7 @@
     },
     "bonusResource": "ore",
     "victoryPoints": 3,
-    "background": "sprites/tier3/Ore3.webp"
+    "background": "sprites/tier3/Ore3.png"
   },
   {
     "id": 83,
@@ -1159,7 +1159,7 @@
     },
     "bonusResource": "mercury",
     "victoryPoints": 5,
-    "background": "sprites/tier3/Mercury3-2.webp"
+    "background": "sprites/tier3/Mercury3-2.png"
   },
   {
     "id": 84,
@@ -1173,7 +1173,7 @@
     },
     "bonusResource": "mercury",
     "victoryPoints": 4,
-    "background": "sprites/tier3/Mercury3-2.webp"
+    "background": "sprites/tier3/Mercury3-2.png"
   },
   {
     "id": 85,
@@ -1187,7 +1187,7 @@
     },
     "bonusResource": "mercury",
     "victoryPoints": 4,
-    "background": "sprites/tier3/Mercury3.webp"
+    "background": "sprites/tier3/Mercury3.png"
   },
   {
     "id": 86,
@@ -1201,7 +1201,7 @@
     },
     "bonusResource": "mercury",
     "victoryPoints": 3,
-    "background": "sprites/tier3/Mercury3.webp"
+    "background": "sprites/tier3/Mercury3.png"
   },
   {
     "id": 87,
@@ -1215,7 +1215,7 @@
     },
     "bonusResource": "crystal",
     "victoryPoints": 5,
-    "background": "sprites/tier3/Crystal3-2.webp"
+    "background": "sprites/tier3/Crystal3-2.png"
   },
   {
     "id": 88,
@@ -1229,7 +1229,7 @@
     },
     "bonusResource": "crystal",
     "victoryPoints": 4,
-    "background": "sprites/tier3/Crystal3-2.webp"
+    "background": "sprites/tier3/Crystal3-2.png"
   },
   {
     "id": 89,
@@ -1243,7 +1243,7 @@
     },
     "bonusResource": "crystal",
     "victoryPoints": 4,
-    "background": "sprites/tier3/Crystal3.webp"
+    "background": "sprites/tier3/Crystal3.png"
   },
   {
     "id": 90,
@@ -1257,6 +1257,6 @@
     },
     "bonusResource": "crystal",
     "victoryPoints": 3,
-    "background": "sprites/tier3/Crystal3.webp"
+    "background": "sprites/tier3/Crystal3.png"
   }
 ]

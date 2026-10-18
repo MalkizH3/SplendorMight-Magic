@@ -32,4 +32,6 @@ Opcjonalnie można użyć Firebase Local Emulator Suite. W `firebase-config.js` 
 
 ## Edycja kart
 
+Karty używają oryginalnych PNG z katalogów KartyJedynki, KartyDwójki i KartyTrójki, powiększonych 8× bez interpolacji do 1504 × 2080 px. Strona wczytuje pliki PNG; obok zachowano bezstratne wersje WebP. Pliki są w `sprites/tier1/`, `sprites/tier2/` i `sprites/tier3/`; wcześniejsze grafiki PNG i WebP znajdują się w `sprites/alternative/tier1–3/`. Wyświetlanie i eksport korzystają z interpolacji; punkty i koszty są nakładane na ilustracje.
+
 Dodaj lub zmień karty w `cards.json`, a kafelki bohaterów w `heroes.json`. Ścieżki `background` wskazują pliki graficzne w katalogu `sprites/`.
