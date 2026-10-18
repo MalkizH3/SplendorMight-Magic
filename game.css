@@ -933,6 +933,7 @@ body.is-game-screen .game-board {
 }
 
 .bank-resource {
+  --orb-color: #d6ae4f;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -940,7 +941,7 @@ body.is-game-screen .game-board {
   min-width: 0;
   min-height: 64px;
   padding: 8px 10px;
-  border: 1px solid #ffffff13;
+  border: 1px solid var(--orb-color);
   border-radius: 4px;
   color: #ece9df;
   background: #1b1c19;
@@ -954,21 +955,29 @@ body.is-game-screen .game-board {
   font: 16px var(--mono);
 }
 
+.bank-resource-mercury { --orb-color: #bfc2c0; }
+.bank-resource-gems { --orb-color: #3159ed; }
+.bank-resource-sulfur { --orb-color: #c99d59; }
+.bank-resource-crystal { --orb-color: #e52c35; }
+.bank-resource-ore { --orb-color: #505353; }
+.bank-resource-gold { --orb-color: #e3bc53; }
+
 .bank-resource .resource-icon {
   width: 34px;
   height: 34px;
 }
 
 .bank-resource.is-selectable {
-  border-color: #fff;
-  box-shadow: 0 0 0 1px #ffffff45;
+  border-color: var(--orb-color);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--orb-color) 45%, transparent);
   cursor: pointer;
 }
 
 .bank-resource.is-selectable:hover,
 .bank-resource.is-selectable:focus-visible {
-  border-color: #fff;
-  box-shadow: 0 0 0 2px #ffffff70, 0 0 14px #ffffff24;
+  border-color: var(--orb-color);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--orb-color) 70%, transparent),
+    0 0 14px color-mix(in srgb, var(--orb-color) 25%, transparent);
   outline: none;
 }
 
