@@ -17,7 +17,7 @@ let activeLevel = "Wszystkie";
 const levels = ["Wszystkie", "Poziom 1", "Poziom 2", "Poziom 3"];
 
 async function loadCards() {
-  const response = await fetch("cards.json");
+  const response = await fetch("cards.json?v=webp-1");
   if (!response.ok) {
     throw new Error("Nie udało się wczytać cards.json");
   }

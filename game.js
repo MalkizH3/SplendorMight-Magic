@@ -80,6 +80,101 @@ let resourceBankSnapshot = null;
 let inviteAttempted = false;
 
 const cardResourceOrder = ["mercury", "gems", "sulfur", "crystal", "ore"];
+const soundVolume = 0.4;
+const pickupSounds = Array.from({ length: 7 }, (_, index) => {
+  const sound = new Audio(new URL(`./sounds/PICKUP0${index + 1}.wav?v=pcm-1`, import.meta.url).href);
+  sound.preload = "auto";
+  sound.volume = soundVolume;
+  return sound;
+});
+
+const purchaseSound = new Audio(new URL("./sounds/FLAGMINE.wav?v=pcm-1", import.meta.url).href);
+purchaseSound.preload = "auto";
+purchaseSound.volume = soundVolume;
+
+function playPurchaseSound() {
+  purchaseSound.currentTime = 0;
+  purchaseSound.play().catch(() => {});
+}
+
+const discardSound = new Audio(new URL("./sounds/KILLFADE.wav?v=pcm-1", import.meta.url).href);
+discardSound.preload = "auto";
+discardSound.volume = soundVolume;
+
+function playDiscardSound() {
+  discardSound.currentTime = 0;
+  discardSound.play().catch(() => {});
+}
+
+const reserveSound = new Audio(new URL("./sounds/STORE.wav?v=pcm-1", import.meta.url).href);
+reserveSound.preload = "auto";
+reserveSound.volume = soundVolume;
+
+function playReserveSound() {
+  reserveSound.currentTime = 0;
+  reserveSound.play().catch(() => {});
+}
+
+function playPickupSound() {
+  const sound = pickupSounds[Math.floor(Math.random() * pickupSounds.length)];
+  sound.currentTime = 0;
+  sound.play().catch(() => {});
+}
+
+const horseSounds = Array.from({ length: 6 }, (_, index) => {
+  const sound = new Audio(new URL(`./sounds/HORSE0${index}.wav?v=pcm-1`, import.meta.url).href);
+  sound.preload = "auto";
+  sound.volume = soundVolume;
+  return sound;
+});
+let horseSoundQueue = Promise.resolve();
+
+async function playHeroArrivalSounds() {
+  for (let count = 0; count < 4; count += 1) {
+    const sound = horseSounds[Math.floor(Math.random() * horseSounds.length)];
+    sound.currentTime = 0;
+    const played = await new Promise((resolve) => {
+      const finish = (success) => {
+        sound.removeEventListener("ended", onEnded);
+        sound.removeEventListener("error", onError);
+        resolve(success);
+      };
+      const onEnded = () => finish(true);
+      const onError = () => finish(false);
+      sound.addEventListener("ended", onEnded, { once: true });
+      sound.addEventListener("error", onError, { once: true });
+      sound.play().catch(onError);
+    });
+    if (!played) return;
+  }
+}
+
+const newTurnSound = new Audio(new URL("./sounds/NEWDAY.wav?v=pcm-1", import.meta.url).href);
+newTurnSound.preload = "auto";
+newTurnSound.volume = soundVolume;
+
+function detectOwnTurnStart(nextRoom) {
+  if (nextRoom.status !== "playing" || !currentUser || nextRoom.currentTurnUid !== currentUser.uid) return;
+  const sameTurn = currentRoom?.id === nextRoom.id &&
+    currentRoom.status === "playing" &&
+    currentRoom.currentTurnUid === nextRoom.currentTurnUid &&
+    currentRoom.turnNumber === nextRoom.turnNumber;
+  if (sameTurn) return;
+  newTurnSound.currentTime = 0;
+  newTurnSound.play().catch(() => {});
+}
+
+function detectHeroArrivals(nextRoom) {
+  if (!currentRoom || currentRoom.id !== nextRoom.id) return;
+  for (const player of nextRoom.players || []) {
+    const previousPlayer = currentRoom.players?.find((entry) => entry.uid === player.uid);
+    if (!previousPlayer) continue;
+    for (const heroId of player.heroIds || []) {
+      if ((previousPlayer.heroIds || []).some((id) => String(id) === String(heroId))) continue;
+      horseSoundQueue = horseSoundQueue.then(playHeroArrivalSounds).catch(() => {});
+    }
+  }
+}
 
 function showMessage(message, kind = "info") {
   elements["game-message"].textContent = message;
@@ -167,7 +262,10 @@ function watchRoom(roomId) {
       return;
     }
 
-    currentRoom = { id: snapshot.id, ...snapshot.data() };
+    const nextRoom = { id: snapshot.id, ...snapshot.data() };
+    detectHeroArrivals(nextRoom);
+    detectOwnTurnStart(nextRoom);
+    currentRoom = nextRoom;
     syncPresenceWatchers();
     renderGame();
     publishLegacyReservations(roomId).catch(console.error);
@@ -292,7 +390,7 @@ function isMyTurn() {
 async function initializeGameData() {
   try {
     const [cardsResponse, heroesResponse] = await Promise.all([
-      fetch("cards.json"),
+      fetch("cards.json?v=webp-1"),
       fetch("heroes.json"),
     ]);
     if (!cardsResponse.ok || !heroesResponse.ok) throw new Error("Nie można pobrać danych kart i bohaterów.");
@@ -476,16 +574,20 @@ async function updateGame(mutator) {
   });
 }
 
-async function performAction(mutator) {
+async function performAction(mutator, onSuccess) {
   try {
     showMessage("");
     const updatedRoom = await updateGame((game, privateState) => {
       if (game.currentTurnUid !== currentUser.uid) throw new Error("Teraz nie jest Twoja tura.");
       mutator(game, privateState);
     });
-    currentRoom = { ...currentRoom, ...updatedRoom };
+    const nextRoom = { ...currentRoom, ...updatedRoom };
+    detectHeroArrivals(nextRoom);
+    detectOwnTurnStart(nextRoom);
+    currentRoom = nextRoom;
     selectedResourcePicks = [];
     resourceBankSnapshot = null;
+    onSuccess?.();
     if (currentRoom?.status === "playing") renderBoard();
   } catch (error) {
     console.error(error);
@@ -575,15 +677,21 @@ function captureCardFlights() {
     if (now - source.time > 5000) cardFlightSources.delete(key);
   }
   document.querySelectorAll("[data-flight-card]").forEach((node) => {
-    const visual = node.matches(".hero-tile")
+    const visual = node.matches(".hero-tile, .market-deck")
       ? node : node.querySelector(".market-card-art, .player-card-display");
     if (!visual) return;
     const rect = node.classList.contains("market-card")
       ? visual.getBoundingClientRect() : node.getBoundingClientRect();
     if (!rect.width || !rect.height) return;
     const owner = node.closest("[data-player-uid]")?.dataset.playerUid || "market";
+    const flightVisual = visual.cloneNode(true);
+    if (node.matches(".market-deck")) {
+      flightVisual.removeAttribute("data-flight-card");
+      flightVisual.removeAttribute("tabindex");
+      flightVisual.querySelector(".market-card-actions")?.remove();
+    }
     cardFlightSources.set(`${owner}:${node.dataset.flightCard}`, {
-      rect, visual: visual.cloneNode(true), time: now,
+      rect, visual: flightVisual, time: now,
     });
   });
   const previous = cardFlightPlayers;
@@ -848,7 +956,7 @@ function makePlayerCardBadge(card, isReserved = false, ownedByMe = false) {
     buyButton.disabled = !getPayment(card, player);
     buyButton.addEventListener("click", () => performAction((game, privateState) => {
       buyCard(game, currentUser.uid, privateState, cardMap, card.id, "reserved", heroMap);
-    }));
+    }, playPurchaseSound));
     hoverCard.append(buyButton);
   }
 
@@ -862,6 +970,10 @@ function renderMarket(paused) {
     const tierInfo = document.createElement("div");
     const heading = document.createElement("h4");
     const deckCount = document.createElement("span");
+    const deck = document.createElement("div");
+    const deckLogo = document.createElement("img");
+    const tierDots = document.createElement("span");
+    const deckActions = document.createElement("div");
     const reserveButton = makeButton(
       "Rezerwuj zakrytą",
       "game-button game-button-small reserve-deck-button",
@@ -874,13 +986,30 @@ function renderMarket(paused) {
     heading.textContent = `Poziom ${tier}`;
     deckCount.className = "market-deck-count";
     deckCount.textContent = `Talia: ${currentRoom.decks[tier].length}`;
+    deck.className = `market-deck market-deck-tier-${tier}`;
+    const topCardId = currentRoom.decks[tier].at(-1);
+    if (topCardId) deck.dataset.flightCard = topCardId;
+    deck.classList.toggle("market-deck-empty", currentRoom.decks[tier].length === 0);
+    deck.tabIndex = 0;
+    deck.setAttribute("aria-label", `Zakryta talia, poziom ${tier}, pozostało kart: ${currentRoom.decks[tier].length}`);
+    deckLogo.className = "market-deck-logo";
+    deckLogo.src = "sprites/logoSplendor.webp";
+    deckLogo.alt = "Splendor Might & Magic";
+    tierDots.className = "market-deck-dots";
+    tierDots.setAttribute("aria-hidden", "true");
+    for (let dot = 0; dot < tier; dot += 1) {
+      tierDots.append(document.createElement("i"));
+    }
+    deckActions.className = "market-card-actions";
     reserveButton.disabled = !isMyTurn() || paused || currentRoom.phase !== "action" ||
       currentRoom.decks[tier].length === 0 || player.reservedCount >= 3;
     reserveButton.addEventListener("click", () => performAction((game, privateState) => {
       reserveCard(game, currentUser.uid, privateState, null, heroMap, tier);
-    }));
+    }, playReserveSound));
     cardsGrid.className = "market-card-list";
-    tierInfo.append(heading, deckCount, reserveButton);
+    deckActions.append(reserveButton);
+    deck.append(deckLogo, tierDots, deckActions);
+    tierInfo.append(deck, heading, deckCount);
     row.append(tierInfo, cardsGrid);
 
     for (const cardId of currentRoom.market[tier]) {
@@ -916,14 +1045,14 @@ function makeMarketCard(card) {
   buyButton.disabled = !isMyTurn() || currentRoom.phase !== "action" || !canBuy;
   buyButton.addEventListener("click", () => performAction((game, privateState) => {
     buyCard(game, currentUser.uid, privateState, cardMap, card.id, "market", heroMap);
-  }));
+  }, playPurchaseSound));
   actions.append(buyButton);
 
   const reserveButton = makeButton("Rezerwuj", "game-button game-button-small");
   reserveButton.disabled = !isMyTurn() || currentRoom.phase !== "action" || player.reservedCount >= 3;
   reserveButton.addEventListener("click", () => performAction((game, privateState) => {
     reserveCard(game, currentUser.uid, privateState, card.id, heroMap);
-  }));
+  }, playReserveSound));
   actions.append(reserveButton);
 
   article.append(artwork, actions);
@@ -964,7 +1093,7 @@ function makeTableCard(card, source) {
   buyButton.disabled = !isMyTurn() || currentRoom.phase !== "action" || !canBuy;
   buyButton.addEventListener("click", () => performAction((game, privateState) => {
     buyCard(game, currentUser.uid, privateState, cardMap, card.id, source, heroMap);
-  }));
+  }, playPurchaseSound));
   actions.append(buyButton);
 
   if (source === "market") {
@@ -973,7 +1102,7 @@ function makeTableCard(card, source) {
       currentRoom.players.find((player) => player.uid === currentUser.uid).reservedCount >= 3;
     reserveButton.addEventListener("click", () => performAction((game, privateState) => {
       reserveCard(game, currentUser.uid, privateState, card.id, heroMap);
-    }));
+    }, playReserveSound));
     actions.append(reserveButton);
   }
 
@@ -1093,6 +1222,7 @@ function removeSelectedResource(type, paused) {
 }
 
 function takeSelectedResources() {
+  playPickupSound();
   const selection = [...selectedResourcePicks];
   if (selection.length === 2 && selection[0] === selection[1]) {
     performAction((game) => takeTwoResources(game, currentUser.uid, selection[0], heroMap));
@@ -1209,7 +1339,7 @@ function renderResolution(paused) {
     submit.disabled = true;
     submit.addEventListener("click", () => performAction((game) => {
       discardTokens(game, currentUser.uid, discardSelection, heroMap);
-    }));
+    }, playDiscardSound));
     const selectedTotal = tokenTypes.reduce((sum, type) => sum + discardSelection[type], 0);
     submit.disabled = selectedTotal !== pending.count;
     discardDialog.append(dialogHeading, content, submit);
